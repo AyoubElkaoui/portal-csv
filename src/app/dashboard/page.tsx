@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdvancedFilters, FilterState } from '@/components/AdvancedFilters';
 import { useKeyboardShortcuts, KeyboardShortcutsHelp } from '@/hooks/useKeyboardShortcuts';
 import { DataVisualization } from '@/components/DataVisualization';
+import { EmailModal } from '@/components/EmailModal';
 
 type Invoice = {
   id: string;
@@ -65,6 +66,8 @@ export default function Dashboard() {
   });
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [selectedUploads, setSelectedUploads] = useState<Set<string>>(new Set());
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [selectedEmailInvoice, setSelectedEmailInvoice] = useState<Invoice | null>(null);
   const [activeTab, setActiveTab] = useState<'uploads' | 'analytics'>('uploads');
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -223,10 +226,19 @@ export default function Dashboard() {
   const handleBulkApproveUploads = async () => {
     if (selectedUploads.size === 0) return;
 
+    // Calculate total number of invoices across selected uploads
+    let totalInvoices = 0;
+    selectedUploads.forEach(uploadId => {
+      const upload = uploads.find(u => u.id === uploadId);
+      if (upload) {
+        totalInvoices += upload.invoices.length;
+      }
+    });
+
     const confirmed = await new Promise<boolean>((resolve) => {
       setConfirmationConfig({
         title: 'Bulk Goedkeuren',
-        message: `Weet je zeker dat je alle facturen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} wilt goedkeuren?`,
+        message: `Weet je zeker dat je ${totalInvoices} factur${totalInvoices !== 1 ? 'en' : ''} wilt goedkeuren in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''}?`,
         onConfirm: () => {
           setShowConfirmation(false);
           resolve(true);
@@ -256,7 +268,7 @@ export default function Dashboard() {
 
       if (!response.ok) throw new Error('Bulk goedkeuren mislukt');
 
-      addToast('success', 'Succes', `Alle facturen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} zijn goedgekeurd.`);
+      addToast('success', 'Succes', `${totalInvoices} factur${totalInvoices !== 1 ? 'en' : ''} in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} zijn goedgekeurd.`);
 
       setSelectedUploads(new Set());
       fetchUploads();
@@ -269,10 +281,19 @@ export default function Dashboard() {
   const handleBulkRejectUploads = async () => {
     if (selectedUploads.size === 0) return;
 
+    // Calculate total number of invoices across selected uploads
+    let totalInvoices = 0;
+    selectedUploads.forEach(uploadId => {
+      const upload = uploads.find(u => u.id === uploadId);
+      if (upload) {
+        totalInvoices += upload.invoices.length;
+      }
+    });
+
     const confirmed = await new Promise<boolean>((resolve) => {
       setConfirmationConfig({
         title: 'Bulk Afwijzen',
-        message: `Weet je zeker dat je alle facturen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} wilt afwijzen?`,
+        message: `Weet je zeker dat je ${totalInvoices} factur${totalInvoices !== 1 ? 'en' : ''} wilt afwijzen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''}?`,
         onConfirm: () => {
           setShowConfirmation(false);
           resolve(true);
@@ -302,7 +323,7 @@ export default function Dashboard() {
 
       if (!response.ok) throw new Error('Bulk afwijzen mislukt');
 
-      addToast('success', 'Succes', `Alle facturen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} zijn afgewezen.`);
+      addToast('success', 'Succes', `${totalInvoices} factur${totalInvoices !== 1 ? 'en' : ''} in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} zijn afgewezen.`);
 
       setSelectedUploads(new Set());
       fetchUploads();
@@ -604,6 +625,19 @@ export default function Dashboard() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setSelectedEmailInvoice(invoice);
+                                  setShowEmailModal(true);
+                                }}
+                                className="bg-purple-500 text-white p-1.5 rounded hover:bg-purple-600 transition-colors"
+                                title="Email versturen"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   confirmReject(invoice.id);
                                 }}
                                 className="bg-red-500 text-white p-1.5 rounded hover:bg-red-600 transition-colors"
@@ -668,6 +702,18 @@ export default function Dashboard() {
                                   title="Opmerking toevoegen"
                                 >
                                   <MessageSquare size={14} />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedEmailInvoice(invoice);
+                                    setShowEmailModal(true);
+                                  }}
+                                  className="bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600 transition-colors flex items-center justify-center"
+                                  title="Email versturen"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
                                 </button>
                                 <button
                                   onClick={() => confirmReject(invoice.id)}
@@ -772,6 +818,29 @@ export default function Dashboard() {
       )}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <KeyboardShortcutsHelp />
+      {showEmailModal && selectedEmailInvoice && (
+        <EmailModal
+          isOpen={showEmailModal}
+          onClose={() => {
+            setShowEmailModal(false);
+            setSelectedEmailInvoice(null);
+          }}
+          invoiceData={{
+            id: selectedEmailInvoice.id,
+            factuurnummer: selectedEmailInvoice.factuurnummer,
+            relatienaam: selectedEmailInvoice.relatienaam,
+            factuurbedrag: selectedEmailInvoice.factuurbedrag,
+            factuurdatum: selectedEmailInvoice.factuurdatum,
+            akkoord: selectedEmailInvoice.akkoord,
+            afgewezen: selectedEmailInvoice.afgewezen,
+            opmerkingen: selectedEmailInvoice.opmerkingen || undefined
+          }}
+          onEmailSent={() => {
+            addToast('success', 'Email verzonden', 'Email succesvol verzonden');
+            fetchUploads();
+          }}
+        />
+      )}
     </div>
   );
 }

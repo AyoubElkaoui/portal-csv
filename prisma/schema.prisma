@@ -62,3 +62,18 @@ model Approval {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 }
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String   // 'approve', 'reject', 'email_sent', 'upload', 'comment', etc.
+  entityType  String   // 'invoice', 'upload', 'email', etc.
+  entityId    String   // ID of the affected entity
+  details     String?  // JSON string with additional details
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}
