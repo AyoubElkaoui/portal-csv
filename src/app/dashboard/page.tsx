@@ -42,7 +42,6 @@ export default function Dashboard() {
   const { toasts, addToast, removeToast } = useToast();
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
   const [comment, setComment] = useState('');
@@ -118,7 +117,6 @@ export default function Dashboard() {
 
   const fetchUploads = async () => {
     try {
-      setError(null);
       const res = await fetch('/api/uploads');
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -127,7 +125,6 @@ export default function Dashboard() {
       setUploads(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Er is een onverwachte fout opgetreden';
-      setError(errorMessage);
       addToast('error', 'Fout bij laden uploads', errorMessage, fetchUploads);
     }
     setLoading(false);
@@ -161,8 +158,6 @@ export default function Dashboard() {
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
-
-      const result = await res.json();
 
       // Verstuur email notificatie
       try {
@@ -215,14 +210,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleSelectAllUploads = (checked: boolean) => {
-    if (checked) {
-      setSelectedUploads(new Set(filteredUploads.map(upload => upload.id)));
-    } else {
-      setSelectedUploads(new Set());
-    }
-  };
-
   const handleSelectUpload = (uploadId: string, checked: boolean) => {
     const newSelected = new Set(selectedUploads);
     if (checked) {
@@ -240,7 +227,10 @@ export default function Dashboard() {
       setConfirmationConfig({
         title: 'Bulk Goedkeuren',
         message: `Weet je zeker dat je alle facturen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} wilt goedkeuren?`,
-        onConfirm: () => resolve(true),
+        onConfirm: () => {
+          setShowConfirmation(false);
+          resolve(true);
+        },
         type: 'warning'
       });
       setShowConfirmation(true);
@@ -283,7 +273,10 @@ export default function Dashboard() {
       setConfirmationConfig({
         title: 'Bulk Afwijzen',
         message: `Weet je zeker dat je alle facturen in ${selectedUploads.size} upload${selectedUploads.size !== 1 ? 's' : ''} wilt afwijzen?`,
-        onConfirm: () => resolve(true),
+        onConfirm: () => {
+          setShowConfirmation(false);
+          resolve(true);
+        },
         type: 'danger'
       });
       setShowConfirmation(true);

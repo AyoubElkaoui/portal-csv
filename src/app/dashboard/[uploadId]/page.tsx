@@ -13,7 +13,6 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdvancedFilters, FilterState } from '@/components/AdvancedFilters';
 import { useKeyboardShortcuts, KeyboardShortcutsHelp } from '@/hooks/useKeyboardShortcuts';
-import { ExportButton } from '@/components/ExportButton';
 
 type Invoice = {
   id: string;
@@ -551,12 +550,6 @@ export default function UploadDetailPage() {
               className="w-full sm:w-auto"
             />
           </div>
-          <ExportButton
-            data={filteredInvoices}
-            filename={`${upload.filename}_facturen`}
-            filters={filters}
-            searchTerm={searchTerm}
-          />
         </div>
 
         {selectedInvoices.size > 0 && (
