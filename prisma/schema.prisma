@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String?
+  createdAt DateTime   @default(now())
+  uploads   Upload[]
+  approvals Approval[]
+}
+
+model Upload {
+  id         String     @id @default(cuid())
+  userId     String?
+  user       User?      @relation(fields: [userId], references: [id])
+  filename   String
+  uploadedAt DateTime   @default(now())
+  invoices   Invoice[]
+  approvals  Approval[]
+}
+
+model Invoice {
+  id                String     @id @default(cuid())
+  uploadId          String
+  upload            Upload     @relation(fields: [uploadId], references: [id])
+  factuurnummer     String
+  relatienaam       String
+  factuurdatum      DateTime
+  bedragExcl        Float
+  btw               Float
+  factuurbedrag     Float
+  openstaandeBedrag Float
+  betalingstermijn  Int
+  aantalDagenOpen   Int
+  akkoord           Boolean    @default(true)
+  afgewezen         Boolean    @default(false)
+  opmerkingen       String?
+  createdAt         DateTime   @default(now())
+  approvals         Approval[]
+}
+
+model Approval {
+  id        String   @id @default(cuid())
+  uploadId  String
+  upload    Upload   @relation(fields: [uploadId], references: [id])
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+  approved  Boolean
+  comment   String?
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}

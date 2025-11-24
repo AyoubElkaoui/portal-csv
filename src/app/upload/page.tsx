@@ -1,13 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Upload, BarChart3, FileUp } from 'lucide-react';
-import { useState } from 'react';
+import { Home, BarChart3 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/Skeleton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-export default function Home() {
+export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
@@ -29,7 +29,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage('Upload succesvol! Ga naar Dashboard om te controleren.');
+        setMessage('Upload succesvol!');
         setFile(null);
       } else {
         setMessage('Upload mislukt: ' + data.error);
@@ -39,8 +39,9 @@ export default function Home() {
     }
     setUploading(false);
   };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -48,18 +49,18 @@ export default function Home() {
               <Image
                 src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
                 alt="Elmar Services Logo"
-                width={150}
-                height={44}
-                className="h-11 w-auto"
+                width={120}
+                height={37}
+                className="h-9 w-auto"
               />
             </div>
             <nav className="flex space-x-6 items-center">
-              <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                <Upload className="mr-2" size={18} />
-                Upload CSV
+              <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                <Home className="mr-1" size={18} />
+                Home
               </Link>
               <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                <BarChart3 className="mr-2" size={18} />
+                <BarChart3 className="mr-1" size={18} />
                 Dashboard
               </Link>
               <ThemeToggle />
@@ -67,26 +68,9 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Welkom bij het Elmar Services Portal</h1>
-          <p className="text-xl text-gray-600 mb-8">Beheer eenvoudig uw facturen met onze intuïtieve interface.</p>
-          <div className="flex space-x-6 justify-center mb-12">
-            <Link href="/upload" className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 font-medium flex items-center shadow-lg transition-colors">
-              <Upload className="mr-2" size={20} />
-              Upload CSV
-            </Link>
-            <Link href="/dashboard" className="bg-white text-blue-600 px-8 py-4 rounded-lg border-2 border-blue-600 hover:bg-blue-50 font-medium flex items-center shadow-lg transition-colors">
-              <BarChart3 className="mr-2" size={20} />
-              Bekijk Dashboard
-            </Link>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200 max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6 text-blue-600 flex items-center justify-center">
-            <FileUp className="mr-3" size={24} />
-            Snelle Upload
-          </h2>
+      <div className="flex items-center justify-center py-12">
+        <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-lg border border-gray-200">
+          <h1 className="text-3xl font-bold text-center mb-8 text-blue-600">Upload CSV Bestand</h1>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-base font-medium text-gray-700 mb-3">
@@ -110,10 +94,7 @@ export default function Home() {
                   Bezig met uploaden...
                 </>
               ) : (
-                <>
-                  <Upload className="mr-2" size={18} />
-                  Upload & Ga naar Dashboard
-                </>
+                'Upload'
               )}
             </button>
           </form>
@@ -123,7 +104,7 @@ export default function Home() {
             </p>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
