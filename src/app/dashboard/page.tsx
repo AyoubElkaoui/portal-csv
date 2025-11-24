@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, AlertTriangle, CheckCircle, Home, Upload } from 'lucide-react';
+import { MessageSquare, AlertTriangle, CheckCircle, Home, Upload, FileText } from 'lucide-react';
 import { SkeletonCard } from '@/components/Skeleton';
 import { SearchBar } from '@/components/SearchBar';
 import { ToastContainer, useToast } from '@/components/Toast';
@@ -445,6 +445,10 @@ export default function Dashboard() {
               <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
                 <Upload className="mr-1" size={18} />
                 Upload CSV
+              </Link>
+              <Link href="/dashboard/audit" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                <FileText className="mr-1" size={18} />
+                Audit Logs
               </Link>
               <ThemeToggle />
             </nav>

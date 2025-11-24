@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Papa from 'papaparse';
 
 import { prisma } from '@/lib/prisma';
+import { auditActions } from '@/lib/audit';
 
 export async function POST(request: NextRequest) {
 
@@ -15,6 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
 
   }
+
+  // Get client information for audit logging
+  const ipAddress = request.headers.get('x-forwarded-for') ||
+                   request.headers.get('x-real-ip') ||
+                   'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
 
   const fileContent = await file.text();
 
@@ -135,6 +142,9 @@ export async function POST(request: NextRequest) {
     data: invoices,
 
   });
+
+  // Log the upload action
+  await auditActions.uploadCreated('system', upload.id, file.name, invoices.length);
 
   return NextResponse.json({ success: true, uploadId: upload.id });
 

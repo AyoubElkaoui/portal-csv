@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { auditActions } from '@/lib/audit';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -18,6 +19,12 @@ export async function POST(request: NextRequest) {
     if (!to || !subject || !html) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    // Get client information for audit logging
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown';
+    const userAgent = request.headers.get('user-agent') || 'unknown';
 
     // Determine from email based on environment
     const fromEmail = process.env.FROM_EMAIL || 'noreply@resend.dev';
@@ -43,6 +50,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       throw error;
+    }
+
+    // Log the email action
+    if (invoiceId) {
+      await auditActions.emailSent('system', invoiceId, to, templateId, ipAddress, userAgent);
     }
 
     console.log('Email sent successfully:', data?.id);
