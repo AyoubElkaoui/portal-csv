@@ -72,13 +72,15 @@ export const auditActions = {
     }),
 
   // Upload actions
-  uploadCreated: (userId: string, uploadId: string, filename: string, invoiceCount: number) =>
+  uploadCreated: (userId: string, uploadId: string, filename: string, invoiceCount: number, ipAddress?: string, userAgent?: string) =>
     createAuditLog({
       userId,
       action: 'upload_created',
       entityType: 'upload',
       entityId: uploadId,
       details: { filename, invoiceCount },
+      ipAddress,
+      userAgent,
     }),
 
   // Bulk actions
