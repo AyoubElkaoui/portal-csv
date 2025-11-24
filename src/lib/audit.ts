@@ -2,9 +2,8 @@ import { prisma } from '@/lib/prisma';
 
 export interface AuditLogData {
   userId?: string;
+  uploadId?: string;
   action: string;
-  entityType: string;
-  entityId: string;
   details?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
@@ -15,9 +14,8 @@ export async function createAuditLog(data: AuditLogData) {
     await prisma.auditLog.create({
       data: {
         userId: data.userId,
+        uploadId: data.uploadId,
         action: data.action,
-        entityType: data.entityType,
-        entityId: data.entityId,
         details: data.details ? JSON.stringify(data.details) : null,
         ipAddress: data.ipAddress,
         userAgent: data.userAgent,
@@ -31,77 +29,53 @@ export async function createAuditLog(data: AuditLogData) {
 
 // Helper functions for common audit actions
 export const auditActions = {
-  // Invoice actions
-  invoiceApproved: (userId: string, invoiceId: string, details?: Record<string, unknown>) =>
+  // Upload actions
+  uploadCreated: (userId: string, uploadId: string, filename: string, ipAddress?: string, userAgent?: string) =>
     createAuditLog({
       userId,
-      action: 'invoice_approved',
-      entityType: 'invoice',
-      entityId: invoiceId,
-      details,
+      uploadId,
+      action: 'upload_created',
+      details: { filename },
+      ipAddress,
+      userAgent,
     }),
 
-  invoiceRejected: (userId: string, invoiceId: string, details?: Record<string, unknown>) =>
+  uploadReviewed: (userId: string, uploadId: string, comments?: string, ipAddress?: string, userAgent?: string) =>
     createAuditLog({
       userId,
-      action: 'invoice_rejected',
-      entityType: 'invoice',
-      entityId: invoiceId,
-      details,
+      uploadId,
+      action: 'upload_reviewed',
+      details: { comments },
+      ipAddress,
+      userAgent,
     }),
 
-  invoiceCommented: (userId: string, invoiceId: string, comment: string) =>
+  uploadDownloaded: (userId: string, uploadId: string, ipAddress?: string, userAgent?: string) =>
     createAuditLog({
       userId,
-      action: 'invoice_commented',
-      entityType: 'invoice',
-      entityId: invoiceId,
-      details: { comment },
+      uploadId,
+      action: 'upload_downloaded',
+      ipAddress,
+      userAgent,
+    }),
+
+  uploadDeleted: (userId: string, uploadId: string, filename: string, ipAddress?: string, userAgent?: string) =>
+    createAuditLog({
+      userId,
+      uploadId,
+      action: 'upload_deleted',
+      details: { filename },
+      ipAddress,
+      userAgent,
     }),
 
   // Email actions
-  emailSent: (userId: string, invoiceId: string, recipient: string, templateId?: string, ipAddress?: string, userAgent?: string) =>
+  emailSent: (userId: string, uploadId: string, recipient: string, ipAddress?: string, userAgent?: string) =>
     createAuditLog({
       userId,
+      uploadId,
       action: 'email_sent',
-      entityType: 'invoice',
-      entityId: invoiceId,
-      details: { recipient, templateId },
-      ipAddress,
-      userAgent,
-    }),
-
-  // Upload actions
-  uploadCreated: (userId: string, uploadId: string, filename: string, invoiceCount: number, ipAddress?: string, userAgent?: string) =>
-    createAuditLog({
-      userId,
-      action: 'upload_created',
-      entityType: 'upload',
-      entityId: uploadId,
-      details: { filename, invoiceCount },
-      ipAddress,
-      userAgent,
-    }),
-
-  // Bulk actions
-  bulkApproved: (userId: string, uploadId: string, invoiceIds: string[], ipAddress?: string, userAgent?: string) =>
-    createAuditLog({
-      userId,
-      action: 'bulk_approved',
-      entityType: 'upload',
-      entityId: uploadId,
-      details: { invoiceIds, count: invoiceIds.length },
-      ipAddress,
-      userAgent,
-    }),
-
-  bulkRejected: (userId: string, uploadId: string, invoiceIds: string[], ipAddress?: string, userAgent?: string) =>
-    createAuditLog({
-      userId,
-      action: 'bulk_rejected',
-      entityType: 'upload',
-      entityId: uploadId,
-      details: { invoiceIds, count: invoiceIds.length },
+      details: { recipient },
       ipAddress,
       userAgent,
     }),

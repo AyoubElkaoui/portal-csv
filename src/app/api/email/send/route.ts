@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Log the email action
     if (invoiceId) {
-      await auditActions.emailSent('system', invoiceId, to, templateId, ipAddress, userAgent);
+      await auditActions.emailSent('system', invoiceId, to, ipAddress, userAgent);
     }
 
     console.log('Email sent successfully:', data?.id);

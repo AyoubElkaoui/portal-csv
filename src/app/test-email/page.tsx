@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 interface EmailResult {
   success?: boolean;
@@ -76,7 +77,10 @@ export default function TestEmailPage() {
           <div className="mt-6 p-4 rounded-lg border">
             {result.success ? (
               <div className="text-green-600">
-                <h3 className="font-semibold">✅ Email verzonden!</h3>
+                <h3 className="font-semibold flex items-center">
+                  <CheckCircle className="mr-2" size={20} />
+                  Email verzonden!
+                </h3>
                 <p className="text-sm mt-2">
                   Van: <strong>{result.from}</strong><br/>
                   Naar: <strong>{result.to}</strong><br/>
@@ -85,7 +89,10 @@ export default function TestEmailPage() {
               </div>
             ) : (
               <div className="text-red-600">
-                <h3 className="font-semibold">❌ Fout bij verzenden</h3>
+                <h3 className="font-semibold flex items-center">
+                  <XCircle className="mr-2" size={20} />
+                  Fout bij verzenden
+                </h3>
                 <p className="text-sm mt-2">{result.error}</p>
                 {result.details && (
                   <p className="text-xs text-gray-600 mt-1">{result.details}</p>
@@ -98,9 +105,25 @@ export default function TestEmailPage() {
         <div className="mt-6 text-sm text-gray-600">
           <p><strong>Configuratie:</strong></p>
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>API Key: {process.env.NEXT_PUBLIC_RESEND_API_KEY ? '✅ Ingesteld' : '❌ Niet ingesteld'}</li>
+            <li className="flex items-center">
+              API Key: {process.env.NEXT_PUBLIC_RESEND_API_KEY ? (
+                <>
+                  <CheckCircle className="mr-1 text-green-600" size={14} />
+                  Ingesteld
+                </>
+              ) : (
+                <>
+                  <XCircle className="mr-1 text-red-600" size={14} />
+                  Niet ingesteld
+                </>
+              )}
+            </li>
             <li>From Email: {process.env.NEXT_PUBLIC_FROM_EMAIL || 'onboarding@resend.dev'}</li>
-            <li>Domein: akwebsolutions.nl (geverifieerd ✅)</li>
+            <li className="flex items-center">
+              Domein: akwebsolutions.nl (
+              <CheckCircle className="mr-1 text-green-600" size={14} />
+              geverifieerd)
+            </li>
           </ul>
         </div>
       </div>

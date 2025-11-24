@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Send, X, Eye, EyeOff } from 'lucide-react';
+import { Mail, Send, X, Eye, EyeOff, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 import { EMAIL_TEMPLATES, EmailTemplate, renderEmailTemplate, getTemplatesByCategory } from '@/lib/emailTemplates';
 import { ToastContainer, useToast } from '@/components/Toast';
 
@@ -188,7 +188,10 @@ export function EmailModal({ isOpen, onClose, invoiceData, recipientEmail, onEma
                     {/* Approval Templates */}
                     {approvalTemplates.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-green-600 dark:text-green-400 mb-2">✅ Goedkeuring</h4>
+                        <h4 className="font-medium text-green-600 dark:text-green-400 mb-2 flex items-center">
+                          <CheckCircle className="mr-2" size={16} />
+                          Goedkeuring
+                        </h4>
                         <div className="space-y-2">
                           {approvalTemplates.map(template => (
                             <button
@@ -213,7 +216,10 @@ export function EmailModal({ isOpen, onClose, invoiceData, recipientEmail, onEma
                     {/* Rejection Templates */}
                     {rejectionTemplates.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-red-600 dark:text-red-400 mb-2">❌ Afwijzing</h4>
+                        <h4 className="font-medium text-red-600 dark:text-red-400 mb-2 flex items-center">
+                          <XCircle className="mr-2" size={16} />
+                          Afwijzing
+                        </h4>
                         <div className="space-y-2">
                           {rejectionTemplates.map(template => (
                             <button
@@ -238,7 +244,10 @@ export function EmailModal({ isOpen, onClose, invoiceData, recipientEmail, onEma
                     {/* Reminder Templates */}
                     {reminderTemplates.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-yellow-600 dark:text-yellow-400 mb-2">⏰ Herinnering</h4>
+                        <h4 className="font-medium text-yellow-600 dark:text-yellow-400 mb-2 flex items-center">
+                          <Clock className="mr-2" size={16} />
+                          Herinnering
+                        </h4>
                         <div className="space-y-2">
                           {reminderTemplates.map(template => (
                             <button
@@ -263,7 +272,10 @@ export function EmailModal({ isOpen, onClose, invoiceData, recipientEmail, onEma
                     {/* Notification Templates */}
                     {notificationTemplates.length > 0 && (
                       <div>
-                        <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2">📋 Notificatie</h4>
+                        <h4 className="font-medium text-blue-600 dark:text-blue-400 mb-2 flex items-center">
+                          <FileText className="mr-2" size={16} />
+                          Notificatie
+                        </h4>
                         <div className="space-y-2">
                           {notificationTemplates.map(template => (
                             <button

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -15,62 +15,32 @@ model User {
   email     String     @unique
   password  String
   name      String?
+  role      String     @default("uploader") // "uploader" or "reviewer"
   createdAt DateTime   @default(now())
   uploads   Upload[]
-  approvals Approval[]
   auditLogs AuditLog[]
 }
 
 model Upload {
   id         String     @id @default(cuid())
-  userId     String?
-  user       User?      @relation(fields: [userId], references: [id])
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
   filename   String
+  status     String     @default("uploaded") // "uploaded", "reviewed", "processed"
+  reviewedAt DateTime?
+  comments   String?    // Reviewer's comments
+  reviewedData String?  // JSON string of reviewed invoice data
   uploadedAt DateTime   @default(now())
-  invoices   Invoice[]
-  approvals  Approval[]
-}
-
-model Invoice {
-  id                String     @id @default(cuid())
-  uploadId          String
-  upload            Upload     @relation(fields: [uploadId], references: [id])
-  factuurnummer     String
-  relatienaam       String
-  factuurdatum      DateTime
-  bedragExcl        Float
-  btw               Float
-  factuurbedrag     Float
-  openstaandeBedrag Float
-  betalingstermijn  Int
-  aantalDagenOpen   Int
-  akkoord           Boolean    @default(true)
-  afgewezen         Boolean    @default(false)
-  opmerkingen       String?
-  createdAt         DateTime   @default(now())
-  approvals         Approval[]
-}
-
-model Approval {
-  id        String   @id @default(cuid())
-  uploadId  String
-  upload    Upload   @relation(fields: [uploadId], references: [id])
-  invoiceId String?
-  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
-  approved  Boolean
-  comment   String?
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  auditLogs  AuditLog[]
 }
 
 model AuditLog {
   id          String   @id @default(cuid())
   userId      String?
   user        User?    @relation(fields: [userId], references: [id])
-  action      String   // 'approve', 'reject', 'email_sent', 'upload', 'comment', etc.
-  entityType  String   // 'invoice', 'upload', 'email', etc.
-  entityId    String   // ID of the affected entity
+  uploadId    String?
+  upload      Upload?  @relation(fields: [uploadId], references: [id])
+  action      String   // 'upload_created', 'upload_reviewed', 'upload_downloaded', etc.
   details     String?  // JSON string with additional details
   ipAddress   String?
   userAgent   String?
