@@ -40,25 +40,35 @@ export default function Home() {
     setUploading(false);
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <header className="bg-white shadow-sm">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      {/* Debug: Show current theme */}
+      <div className="fixed top-0 left-0 bg-black text-white p-2 text-xs z-50">
+        Theme Debug: Check if dark class is applied to html
+      </div>
+      <header className="bg-white dark:bg-slate-900 shadow-lg border-b border-gray-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <Image
-                src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                alt="Elmar Services Logo"
-                width={150}
-                height={44}
-                className="h-11 w-auto"
-              />
+              <div className="p-2 rounded-lg mr-4">
+                <Image
+                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
+                  alt="Elmar Services Logo"
+                  width={120}
+                  height={37}
+                  className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Elmar Services</h1>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Factuurbeheer Systeem</p>
+              </div>
             </div>
-            <nav className="flex space-x-6 items-center">
-              <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+            <nav className="flex space-x-8 items-center">
+              <Link href="/upload" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
                 <Upload className="mr-2" size={18} />
-                Upload CSV
+                Upload Bestand
               </Link>
-              <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+              <Link href="/dashboard" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
                 <BarChart3 className="mr-2" size={18} />
                 Dashboard
               </Link>
@@ -67,60 +77,77 @@ export default function Home() {
           </div>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Welkom bij het Elmar Services Portal</h1>
-          <p className="text-xl text-gray-600 mb-8">Beheer eenvoudig uw facturen met onze intuïtieve interface.</p>
-          <div className="flex space-x-6 justify-center mb-12">
-            <Link href="/upload" className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 font-medium flex items-center shadow-lg transition-colors">
-              <Upload className="mr-2" size={20} />
-              Upload CSV
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-slate-900 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent">
+            Welkom bij het Elmar Services Portal
+          </h1>
+          <p className="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto mb-12">
+            Beheer eenvoudig uw facturen met onze intuïtieve interface. Upload uw bestanden en review ze professioneel.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <Link href="/upload" className="btn-primary flex items-center justify-center text-lg px-8 py-4">
+              <Upload className="mr-3" size={24} />
+              Upload Bestand
             </Link>
-            <Link href="/dashboard" className="bg-white text-blue-600 px-8 py-4 rounded-lg border-2 border-blue-600 hover:bg-blue-50 font-medium flex items-center shadow-lg transition-colors">
-              <BarChart3 className="mr-2" size={20} />
+            <Link href="/dashboard" className="btn-secondary flex items-center justify-center text-lg px-8 py-4">
+              <BarChart3 className="mr-3" size={24} />
               Bekijk Dashboard
             </Link>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200 max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6 text-blue-600 flex items-center justify-center">
-            <FileUp className="mr-3" size={24} />
-            Snelle Upload
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+        <div className="card-modern p-12 max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileUp className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Snelle Upload</h2>
+            <p className="text-slate-600 dark:text-slate-400">
+              Upload uw CSV of Excel bestand om direct te beginnen met het review proces
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-8">
             <div>
-              <label className="block text-base font-medium text-gray-700 mb-3">
-                Selecteer CSV bestand
+              <label className="block text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                Selecteer CSV of Excel bestand
               </label>
               <input
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx,.xls"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors"
+                className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-4 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800 transition-colors"
               />
             </div>
+
             <button
               type="submit"
               disabled={!file || uploading}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors flex items-center justify-center"
+              className="w-full btn-primary text-lg py-4 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
                 <>
-                  <LoadingSpinner className="mr-2" size={18} />
+                  <LoadingSpinner className="mr-3" size={20} />
                   Bezig met uploaden...
                 </>
               ) : (
                 <>
-                  <Upload className="mr-2" size={18} />
+                  <Upload className="mr-3" size={20} />
                   Upload & Ga naar Dashboard
                 </>
               )}
             </button>
           </form>
+
           {message && (
-            <p className={`mt-6 text-center font-medium ${message.includes('succesvol') ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`mt-8 p-4 rounded-lg text-center font-medium ${
+              message.includes('succesvol')
+                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-400'
+                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-400'
+            }`}>
               {message}
-            </p>
+            </div>
           )}
         </div>
       </main>

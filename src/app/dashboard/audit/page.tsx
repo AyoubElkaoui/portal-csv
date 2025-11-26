@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { Home, ArrowLeft } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface AuditLog {
   id: string;
@@ -86,8 +89,30 @@ export default function AuditPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/"
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+              >
+                <Home className="h-5 w-5" />
+                <span className="font-medium">Home</span>
+              </Link>
+              <ArrowLeft className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Audit Logs
+              </h1>
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      <div className="p-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
           Audit Logs
         </h1>

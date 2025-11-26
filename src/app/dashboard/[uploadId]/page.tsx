@@ -393,7 +393,7 @@ export default function UploadDetailPage() {
                 </Link>
                 <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
                   <Upload className="mr-1" size={18} />
-                  Upload CSV
+                  Upload Bestand
                 </Link>
                 <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
                   <ArrowLeft className="mr-1" size={18} />
@@ -475,7 +475,7 @@ export default function UploadDetailPage() {
                 </Link>
                 <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
                   <Upload className="mr-1" size={18} />
-                  Upload CSV
+                  Upload Bestand
                 </Link>
                 <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
                   <ArrowLeft className="mr-1" size={18} />
@@ -520,7 +520,7 @@ export default function UploadDetailPage() {
               </Link>
               <Link href="/upload" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
                 <Upload className="mr-1" size={18} />
-                Upload CSV
+                Upload Bestand
               </Link>
               <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
                 <ArrowLeft className="mr-1" size={18} />

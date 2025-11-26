@@ -2,6 +2,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auditActions } from '@/lib/audit';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const upload = await prisma.upload.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!upload) {
+      return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(upload);
+  } catch (error) {
+    console.error('Failed to fetch upload:', error);
+    return NextResponse.json({ error: 'Failed to fetch upload' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

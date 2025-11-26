@@ -2,81 +2,294 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a202c;
   --card: #ffffff;
-  --card-foreground: #171717;
+  --card-foreground: #1a202c;
   --popover: #ffffff;
-  --popover-foreground: #171717;
-  --primary: #2563eb;
+  --popover-foreground: #1a202c;
+  --primary: #1e40af; /* Elmar blue */
   --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
+  --secondary: #f8fafc;
+  --secondary-foreground: #374151;
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --muted-foreground: #6b7280;
+  --accent: #dbeafe; /* Light blue accent */
+  --accent-foreground: #1e40af;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2563eb;
+  --border: #e5e7eb;
+  --input: #ffffff;
+  --ring: #1e40af;
   --radius: 0.5rem;
+  --elmar-blue: #1e40af;
+  --elmar-light-blue: #dbeafe;
+  --elmar-yellow: #fbbf24;
+  --elmar-gray: #6b7280;
+  --elmar-light-gray: #f8fafc;
+  --gradient-primary: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  --gradient-secondary: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --gradient-accent: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #0a0a0a;
-  --card-foreground: #ededed;
-  --popover: #0a0a0a;
-  --popover-foreground: #ededed;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #1e293b;
-  --secondary-foreground: #f1f5f9;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f1f5f9;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #334155;
-  --input: #334155;
-  --ring: #3b82f6;
+  --background: #1a202c;
+  --foreground: #f7fafc;
+  --card: #2d3748;
+  --card-foreground: #f7fafc;
+  --popover: #2d3748;
+  --popover-foreground: #f7fafc;
+  --primary: #63b3ed; /* Lighter blue for dark mode */
+  --primary-foreground: #1a202c;
+  --secondary: #4a5568;
+  --secondary-foreground: #f7fafc;
+  --muted: #4a5568;
+  --muted-foreground: #a0aec0;
+  --accent: #2b6cb0;
+  --accent-foreground: #f7fafc;
+  --destructive: #fc8181;
+  --destructive-foreground: #1a202c;
+  --border: #4a5568;
+  --input: #2d3748;
+  --ring: #63b3ed;
+  --elmar-blue: #63b3ed;
+  --elmar-light-blue: #2b6cb0;
+  --elmar-yellow: #ed8936;
+  --elmar-gray: #a0aec0;
+  --elmar-light-gray: #4a5568;
+  --gradient-primary: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%);
+  --gradient-secondary: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+  --gradient-accent: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f172a;
+    --foreground: #f8fafc;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+/* Modern solid backgrounds - Elmar professional */
+.gradient-primary {
+  background: var(--elmar-blue);
+}
+
+.gradient-secondary {
+  background: var(--elmar-yellow);
+}
+
+.gradient-accent {
+  background: var(--elmar-light-blue);
+}
+
+/* Enhanced card styling - Elmar professional */
+.card-modern {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.card-modern:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  border-color: var(--elmar-blue);
+}
+
+/* Button enhancements - Elmar professional */
+.btn-primary {
+  background: var(--elmar-blue);
+  border: none;
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(30, 64, 175, 0.2);
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  box-shadow: 0 2px 4px rgba(30, 64, 175, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--elmar-blue);
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--elmar-light-blue);
+  border-color: var(--elmar-blue);
+}
+
+.btn-danger {
+  background: #dc2626;
+  border: none;
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.2);
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
 }
 
 /* Smooth transitions for theme changes */
 * {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Custom scrollbar for dark mode */
+/* Custom scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--muted);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--muted-foreground);
   border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--foreground);
+}
+
+/* Table enhancements - Elmar professional */
+.table-modern {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+.table-modern th {
+  background: var(--elmar-blue);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.875rem;
+}
+
+.table-modern td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.table-modern tr:hover td {
+  background: var(--elmar-light-blue);
+}
+
+/* Form enhancements - Elmar professional */
+.form-modern input,
+.form-modern select,
+.form-modern textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.625rem 0.875rem;
+  background: var(--input);
+  color: var(--foreground);
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.form-modern input:focus,
+.form-modern select:focus,
+.form-modern textarea:focus {
+  outline: none;
+  border-color: var(--elmar-blue);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+  background: var(--card);
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--accent) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Status badges - Elmar professional styling */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-uploaded {
+  background: var(--elmar-yellow);
+  color: #1a202c;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+}
+
+.status-reviewed {
+  background: var(--elmar-blue);
+  color: white;
+  box-shadow: 0 2px 4px rgba(30, 64, 175, 0.3);
+}
+
+.status-processing {
+  background: var(--elmar-gray);
+  color: white;
+  box-shadow: 0 2px 4px rgba(107, 114, 128, 0.3);
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 import { prisma } from '@/lib/prisma';
 import { auditActions } from '@/lib/audit';
 import { Resend } from 'resend';
@@ -7,129 +8,208 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const file = formData.get('file') as File;
-
-  if (!file) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-  }
-
-  // Get client information for audit logging
-  const ipAddress = request.headers.get('x-forwarded-for') ||
-                   request.headers.get('x-real-ip') ||
-                   'unknown';
-  const userAgent = request.headers.get('user-agent') || 'unknown';
-
-  const fileContent = await file.text();
-
-  console.log('File content preview:', fileContent.substring(0, 200));
-
-  const parsed = Papa.parse(fileContent, { header: true, delimiter: ',', skipEmptyLines: true });
-
-  if (parsed.errors.length > 0) {
-    console.error('CSV parsing errors:', parsed.errors);
-    return NextResponse.json({ error: 'CSV parsing failed: ' + parsed.errors.map(e => e.message).join(', ') }, { status: 400 });
-  }
-
-  if (parsed.data.length === 0) {
-    return NextResponse.json({ error: 'CSV file is empty' }, { status: 400 });
-  }
-
-  // For now, assume we have a default uploader user
-  // In a real app, this would come from authentication
-  const uploaderId = 'default-uploader';
-
-  // Ensure the default user exists
-  await prisma.user.upsert({
-    where: { id: uploaderId },
-    update: {},
-    create: {
-      id: uploaderId,
-      email: 'uploader@company.com',
-      password: 'dummy-password', // This should be hashed in a real app
-      name: 'Default Uploader',
-      role: 'uploader',
-    },
-  });
-
-  // Create upload record with parsed data - initially uploaded, not reviewed
-  const upload = await prisma.upload.create({
-    data: {
-      userId: uploaderId,
-      filename: file.name,
-      status: 'uploaded', // Initially uploaded, not reviewed
-      reviewedData: JSON.stringify(parsed.data), // Store the parsed CSV data
-    },
-  });
-
-  // Log the upload action
-  await auditActions.uploadCreated(uploaderId, upload.id, file.name, ipAddress, userAgent);
-
-  // Send auto-emails to both uploader and reviewer
   try {
-    // Get reviewer email from settings
-    const reviewerEmailResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/settings/reviewer-email`);
-    let reviewerEmail = 'reviewer@company.com'; // fallback
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
 
-    if (reviewerEmailResponse.ok) {
-      const settings = await reviewerEmailResponse.json();
-      reviewerEmail = settings.email || reviewerEmail;
+    if (!file) {
+      return NextResponse.json({ error: 'Geen bestand geüpload' }, { status: 400 });
     }
 
-    // Get uploader email (currently hardcoded, in real app this would come from auth)
-    const uploaderEmail = 'uploader@company.com';
+    // Get client information for audit logging
+    const ipAddress = request.headers.get('x-forwarded-for') ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown';
+    const userAgent = request.headers.get('user-agent') || 'unknown';
 
-    // Send email to reviewer
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@company.com',
-      to: reviewerEmail,
-      subject: `Nieuwe CSV upload klaar voor review: ${file.name}`,
-      html: `
-        <h2>Nieuwe CSV upload beschikbaar</h2>
-        <p>Er is een nieuwe CSV upload beschikbaar voor review:</p>
-        <ul>
-          <li><strong>Bestand:</strong> ${file.name}</li>
-          <li><strong>Aantal rijen:</strong> ${parsed.data.length}</li>
-          <li><strong>Uploader:</strong> ${uploaderEmail}</li>
-          <li><strong>Upload tijd:</strong> ${new Date().toLocaleString('nl-NL')}</li>
-        </ul>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/review/${upload.id}">Klik hier om te reviewen</a></p>
-        <p>Met vriendelijke groet,<br>CSV Portal Systeem</p>
-      `,
+    let parsedData: Record<string, unknown>[] = [];
+    let fileType = 'csv';
+
+    // Detect file type and parse accordingly
+    if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+      fileType = 'excel';
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { 
+          type: 'array',
+          cellDates: true  // Convert Excel dates to JavaScript Date objects
+        });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          header: 1,
+          raw: false  // Ensure numbers are parsed properly
+        }) as unknown[][];
+
+        if (jsonData.length === 0) {
+          return NextResponse.json({ error: 'Excel bestand is leeg' }, { status: 400 });
+        }
+
+        // Convert to object format with first row as headers
+        const headers = jsonData[0] as string[];
+        parsedData = jsonData.slice(1).map((row) => {
+          const obj: Record<string, unknown> = {};
+          headers.forEach((header, index) => {
+            const value = row[index];
+            // Convert Date objects to ISO strings for JSON storage
+            if (value instanceof Date) {
+              obj[header] = value.toISOString().split('T')[0]; // YYYY-MM-DD format
+            } else {
+              obj[header] = value || '';
+            }
+          });
+          return obj;
+        });
+      } catch (error) {
+        console.error('Excel parsing error:', error);
+        return NextResponse.json({ error: 'Excel bestand kon niet worden gelezen' }, { status: 400 });
+      }
+    } else {
+      // Handle CSV files
+      try {
+        const fileContent = await file.text();
+        const parsed = Papa.parse(fileContent, {
+          header: true,
+          delimiter: ',',
+          skipEmptyLines: true,
+          dynamicTyping: true
+        });
+
+        if (parsed.errors.length > 0) {
+          console.error('CSV parsing errors:', parsed.errors);
+          return NextResponse.json({
+            error: 'CSV parsing mislukt: ' + parsed.errors.map(e => e.message).join(', ')
+          }, { status: 400 });
+        }
+
+        parsedData = parsed.data as Record<string, unknown>[];
+      } catch (error) {
+        console.error('CSV parsing error:', error);
+        return NextResponse.json({ error: 'CSV bestand kon niet worden gelezen' }, { status: 400 });
+      }
+    }
+
+    if (parsedData.length === 0) {
+      return NextResponse.json({ error: 'Bestand bevat geen data' }, { status: 400 });
+    }
+
+    // Process the data to calculate overdue days and add titel column
+    const processedData = parsedData.map((row) => {
+      const processedRow = { ...row };
+
+      // Add titel column after relatie if it doesn't exist
+      if (row['relatie'] && !row['titel']) {
+        processedRow['titel'] = '';
+      }
+
+      // Calculate overdue days if Factuurdatum exists
+      if (row['Factuurdatum']) {
+        try {
+          // Parse the date string (now in YYYY-MM-DD format from Date objects)
+          const invoiceDate = new Date(row['Factuurdatum'] as string);
+          const currentDate = new Date();
+          const timeDiff = currentDate.getTime() - invoiceDate.getTime();
+          const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+          processedRow['Achterstallige dagen'] = Math.max(0, daysDiff);
+        } catch {
+          processedRow['Achterstallige dagen'] = 0;
+        }
+      } else {
+        processedRow['Achterstallige dagen'] = 0;
+      }
+
+      return processedRow;
     });
 
-    // Send confirmation email to uploader
-    await resend.emails.send({
-      from: process.env.FROM_EMAIL || 'noreply@company.com',
-      to: uploaderEmail,
-      subject: `CSV upload bevestiging: ${file.name}`,
-      html: `
-        <h2>CSV Upload Bevestiging</h2>
-        <p>Je CSV bestand is succesvol geüpload en verzonden voor review:</p>
-        <ul>
-          <li><strong>Bestand:</strong> ${file.name}</li>
-          <li><strong>Aantal rijen:</strong> ${parsed.data.length}</li>
-          <li><strong>Status:</strong> Wachtend op review</li>
-          <li><strong>Upload tijd:</strong> ${new Date().toLocaleString('nl-NL')}</li>
-        </ul>
-        <p>Je ontvangt een notificatie zodra de review is voltooid en het bestand klaar is voor download.</p>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard">Bekijk je uploads in het dashboard</a></p>
-        <p>Met vriendelijke groet,<br>CSV Portal Systeem</p>
-      `,
+    // Create default uploader user if not exists
+    const uploaderId = 'default-uploader';
+    await prisma.user.upsert({
+      where: { id: uploaderId },
+      update: {},
+      create: {
+        id: uploaderId,
+        email: 'elkaoui.a@gmail.com',
+        password: 'dummy-password',
+        name: 'Default Uploader',
+        role: 'uploader',
+      },
     });
 
-    // Log emails sent
-    await auditActions.emailSent(uploaderId, upload.id, reviewerEmail, ipAddress, userAgent);
-    await auditActions.emailSent(uploaderId, upload.id, uploaderEmail, ipAddress, userAgent);
+    // Create upload record - simplified, no sheetNames for now
+    const upload = await prisma.upload.create({
+      data: {
+        userId: uploaderId,
+        filename: file.name,
+        status: 'uploaded',
+        reviewedData: JSON.stringify(processedData),
+      },
+    });
 
-  } catch (emailError) {
-    console.error('Failed to send email:', emailError);
-    // Don't fail the upload if email fails
+    // Log the upload action
+    await auditActions.uploadCreated(uploaderId, upload.id, file.name, ipAddress, userAgent);
+
+    // Send emails (optional)
+    try {
+      const reviewerEmail = 'info@akwebsolutions.nl';
+      const uploaderEmail = 'elkaoui.a@gmail.com';
+
+      // Email to reviewer
+      await resend.emails.send({
+        from: process.env.FROM_EMAIL || 'noreply@company.com',
+        to: reviewerEmail,
+        subject: `Nieuwe ${fileType.toUpperCase()} upload klaar voor review: ${file.name}`,
+        html: `
+          <h2>Nieuwe ${fileType.toUpperCase()} upload beschikbaar</h2>
+          <p>Er is een nieuwe ${fileType.toUpperCase()} upload beschikbaar voor review:</p>
+          <ul>
+            <li><strong>Bestand:</strong> ${file.name}</li>
+            <li><strong>Type:</strong> ${fileType.toUpperCase()}</li>
+            <li><strong>Aantal rijen:</strong> ${processedData.length}</li>
+            <li><strong>Uploader:</strong> ${uploaderEmail}</li>
+            <li><strong>Upload tijd:</strong> ${new Date().toLocaleString('nl-NL')}</li>
+          </ul>
+          <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/review/${upload.id}">Klik hier om te reviewen</a></p>
+        `,
+      });
+
+      // Confirmation email to uploader
+      await resend.emails.send({
+        from: process.env.FROM_EMAIL || 'noreply@company.com',
+        to: uploaderEmail,
+        subject: `${fileType.toUpperCase()} upload bevestiging: ${file.name}`,
+        html: `
+          <h2>${fileType.toUpperCase()} Upload Bevestiging</h2>
+          <p>Je ${fileType.toUpperCase()} bestand is succesvol geüpload:</p>
+          <ul>
+            <li><strong>Bestand:</strong> ${file.name}</li>
+            <li><strong>Type:</strong> ${fileType.toUpperCase()}</li>
+            <li><strong>Aantal rijen:</strong> ${processedData.length}</li>
+            <li><strong>Status:</strong> Wachtend op review</li>
+          </ul>
+          <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard">Bekijk je uploads</a></p>
+        `,
+      });
+
+      await auditActions.emailSent(uploaderId, upload.id, reviewerEmail, ipAddress, userAgent);
+      await auditActions.emailSent(uploaderId, upload.id, uploaderEmail, ipAddress, userAgent);
+
+    } catch (emailError) {
+      console.error('Email error:', emailError);
+      // Don't fail upload if email fails
+    }
+
+    return NextResponse.json({
+      success: true,
+      uploadId: upload.id,
+      message: `${fileType.toUpperCase()} bestand succesvol geüpload!`,
+      fileType: fileType,
+      rowCount: processedData.length
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    return NextResponse.json({
+      error: 'Er is een fout opgetreden bij het uploaden'
+    }, { status: 500 });
   }
-
-  return NextResponse.json({
-    success: true,
-    uploadId: upload.id,
-    message: 'CSV uploaded successfully. Both uploader and reviewer have been notified via email.'
-  });
 }

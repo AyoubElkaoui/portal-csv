@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // In a real app, this would be stored in a database
 // For now, we'll use environment variables or a simple in-memory store
-let reviewerEmail = process.env.DEFAULT_REVIEWER_EMAIL || 'reviewer@company.com';
+let reviewerEmail = process.env.DEFAULT_REVIEWER_EMAIL || 'info@akwebsolutions.nl';
 
 export async function GET() {
   return NextResponse.json({ email: reviewerEmail });

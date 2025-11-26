@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Home, Settings, Upload } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function SettingsPage() {
   const [reviewerEmail, setReviewerEmail] = useState('');
@@ -52,50 +53,62 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-full px-2 sm:px-4 lg:px-6">
-          <div className="flex justify-between items-center py-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <header className="bg-white dark:bg-slate-900 shadow-lg border-b border-gray-200 dark:border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <Image
-                src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                alt="Elmar Services Logo"
-                width={120}
-                height={37}
-                className="h-9 w-auto"
-              />
+              <div className="p-2 rounded-lg mr-4">
+                <Image
+                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
+                  alt="Elmar Services Logo"
+                  width={120}
+                  height={37}
+                  className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
+                />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Elmar Services</h1>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Factuurbeheer Systeem</p>
+              </div>
             </div>
-            <nav className="flex space-x-6">
-              <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                <Home className="mr-1" size={18} />
+            <nav className="flex space-x-8 items-center">
+              <Link href="/" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
+                <Home className="mr-2" size={18} />
                 Home
               </Link>
-              <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                <Upload className="mr-1" size={18} />
-                Upload CSV
+              <Link href="/upload" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
+                <Upload className="mr-2" size={18} />
+                Upload Bestand
               </Link>
-              <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+              <Link href="/dashboard" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
                 Dashboard
               </Link>
+              <ThemeToggle />
             </nav>
           </div>
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center mb-6">
-            <Settings className="mr-3" size={24} />
-            <h1 className="text-2xl font-bold">Instellingen</h1>
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="card-modern p-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Settings className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Instellingen</h1>
+            <p className="text-slate-600 dark:text-slate-400">
+              Configureer de systeem instellingen voor het factuurbeheer systeem
+            </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <label htmlFor="reviewerEmail" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="reviewerEmail" className="block text-lg font-semibold text-slate-900 dark:text-white mb-3">
                 Reviewer Email Adres
               </label>
-              <p className="text-sm text-gray-600 mb-3">
-                Dit email adres ontvangt notificaties wanneer nieuwe CSV bestanden worden geupload voor review.
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
+                Dit email adres ontvangt notificaties wanneer nieuwe bestanden worden geupload voor review.
               </p>
               <input
                 type="email"
@@ -103,28 +116,32 @@ export default function SettingsPage() {
                 value={reviewerEmail}
                 onChange={(e) => setReviewerEmail(e.target.value)}
                 placeholder="reviewer@bedrijf.nl"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
 
             {message && (
-              <div className={`p-3 rounded-md ${message.includes('opgeslagen') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              <div className={`p-4 rounded-lg text-center font-medium ${
+                message.includes('opgeslagen')
+                  ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-400'
+                  : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-400'
+              }`}>
                 {message}
               </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="btn-primary text-lg py-3 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? 'Opslaan...' : 'Opslaan'}
               </button>
 
               <Link
                 href="/dashboard"
-                className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 inline-block"
+                className="btn-secondary text-lg py-3 flex items-center justify-center text-center"
               >
                 Terug naar Dashboard
               </Link>
