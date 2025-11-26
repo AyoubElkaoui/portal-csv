@@ -41,10 +41,6 @@ export default function Home() {
   };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      {/* Debug: Show current theme */}
-      <div className="fixed top-0 left-0 bg-black text-white p-2 text-xs z-50">
-        Theme Debug: Check if dark class is applied to html
-      </div>
       <header className="bg-white dark:bg-slate-900 shadow-lg border-b border-gray-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
