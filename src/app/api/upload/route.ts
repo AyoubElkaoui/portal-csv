@@ -93,29 +93,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Bestand bevat geen data' }, { status: 400 });
     }
 
-    // Process the data to calculate overdue days and add titel column
+    // Process the data to add titel column if needed
     const processedData = parsedData.map((row) => {
       const processedRow = { ...row };
 
       // Add titel column after relatie if it doesn't exist
       if (row['relatie'] && !row['titel']) {
         processedRow['titel'] = '';
-      }
-
-      // Calculate overdue days if Factuurdatum exists
-      if (row['Factuurdatum']) {
-        try {
-          // Parse the date string (now in YYYY-MM-DD format from Date objects)
-          const invoiceDate = new Date(row['Factuurdatum'] as string);
-          const currentDate = new Date();
-          const timeDiff = currentDate.getTime() - invoiceDate.getTime();
-          const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-          processedRow['Achterstallige dagen'] = Math.max(0, daysDiff);
-        } catch {
-          processedRow['Achterstallige dagen'] = 0;
-        }
-      } else {
-        processedRow['Achterstallige dagen'] = 0;
       }
 
       return processedRow;

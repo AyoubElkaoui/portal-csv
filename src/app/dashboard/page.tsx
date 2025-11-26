@@ -1,11 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Home, Upload, FileText, Eye, Download, Settings, Trash2, Mail, AlertTriangle, X, CheckCircle, Maximize2 } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { useSession } from 'next-auth/react';
+import { FileText, Eye, Download, Trash2, Mail, AlertTriangle, X, CheckCircle, Maximize2, Upload } from 'lucide-react';
+import { Navbar } from '@/components/Navbar';
+
+// Extend NextAuth session type to include role
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role?: string;
+    };
+  }
+}
 
 type Upload = {
   id: string;
@@ -26,9 +38,9 @@ interface Toast {
 }
 
 export default function Dashboard() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [uploads, setUploads] = useState<Upload[]>([]);
-  const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [uploadToDelete, setUploadToDelete] = useState<Upload | null>(null);
@@ -37,6 +49,56 @@ export default function Dashboard() {
   const [tableData, setTableData] = useState<Record<string, unknown>[]>([]);
   const [loadingTable, setLoadingTable] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const fetchUploads = async () => {
+    try {
+      const res = await fetch('/api/uploads');
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      const data = await res.json();
+      setUploads(data);
+    } catch (err) {
+      console.error('Failed to fetch uploads:', err);
+    }
+  };
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/signin');
+    }
+  }, [status, router]);
+
+  // Fetch uploads on mount
+  useEffect(() => {
+    fetchUploads();
+  }, []);
+
+  // Show loading while checking auth
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!session) {
+    return null;
+  }
+
+  const isReviewer = session.user?.role === 'reviewer';
+  const isUploader = session.user?.role === 'uploader';
+
+  // Filter uploads based on role
+  const filteredUploads = isReviewer
+    ? uploads.filter(upload => upload.status === 'uploaded') // Only pending reviews for reviewer
+    : uploads; // All uploads for uploader
+
+  // Limit reviewer to only one upload at a time
+  const displayUploads = isReviewer ? filteredUploads.slice(0, 1) : filteredUploads;
 
   const addToast = (type: 'success' | 'error', message: string) => {
     const id = Date.now().toString();
@@ -50,79 +112,19 @@ export default function Dashboard() {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  const fetchUploads = async () => {
-    try {
-      const res = await fetch('/api/uploads');
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-      const data = await res.json();
-      setUploads(data);
-    } catch (err) {
-      console.error('Failed to fetch uploads:', err);
-    }
-    setLoading(false);
-  };
-
-  const handleDelete = (upload: Upload) => {
-    setUploadToDelete(upload);
-    setDeleteModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!uploadToDelete) return;
-
-    setDeleting(uploadToDelete.id);
-    setDeleteModalOpen(false);
-    try {
-      const res = await fetch(`/api/uploads/${uploadToDelete.id}`, {
-        method: 'DELETE',
-      });
-
-      if (res.ok) {
-        setUploads(uploads.filter(upload => upload.id !== uploadToDelete.id));
-        addToast('success', 'Upload succesvol verwijderd');
-      } else {
-        addToast('error', 'Verwijderen mislukt');
-      }
-    } catch (err) {
-      console.error('Failed to delete upload:', err);
-      addToast('error', 'Verwijderen mislukt');
-    } finally {
-      setDeleting(null);
-      setUploadToDelete(null);
-    }
-  };
-
-  const cancelDelete = () => {
-    setDeleteModalOpen(false);
-    setUploadToDelete(null);
-  };
-
   const openFullscreen = async (upload: Upload) => {
     setFullscreenUpload(upload);
     setFullscreenModalOpen(true);
     setLoadingTable(true);
-
     try {
-      // Fetch the table data for this upload
       const response = await fetch(`/api/uploads/${upload.id}`);
       if (response.ok) {
-        const uploadDetails = await response.json();
-        if (uploadDetails.reviewedData) {
-          const parsedData = JSON.parse(uploadDetails.reviewedData);
-          setTableData(parsedData);
-        } else {
-          setTableData([]);
-        }
-      } else {
-        setTableData([]);
-        addToast('error', 'Kon tabel data niet laden');
+        const data = await response.json();
+        setTableData(data.data || []);
       }
     } catch (error) {
-      console.error('Error fetching table data:', error);
-      setTableData([]);
-      addToast('error', 'Fout bij het laden van tabel data');
+      console.error('Error loading table data:', error);
+      addToast('error', 'Fout bij het laden van tabelgegevens');
     } finally {
       setLoadingTable(false);
     }
@@ -134,52 +136,40 @@ export default function Dashboard() {
     setTableData([]);
   };
 
-  useEffect(() => {
-    fetchUploads();
-  }, []);
+  const handleDelete = (upload: Upload) => {
+    setUploadToDelete(upload);
+    setDeleteModalOpen(true);
+  };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm">
-          <div className="max-w-full px-2 sm:px-4 lg:px-6">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center">
-                <Image
-                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                  alt="Elmar Services Logo"
-                  width={120}
-                  height={37}
-                  className="h-9 w-auto"
-                />
-              </div>
-              <nav className="flex space-x-6">
-                <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                  <Home className="mr-1" size={18} />
-                  Home
-                </Link>
-                <Link href="/upload" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                  <Upload className="mr-1" size={18} />
-                  Upload Bestand
-                </Link>
-              </nav>
-            </div>
-          </div>
-        </header>
-        <div className="max-w-full px-2 sm:px-4 lg:px-6 py-6">
-          <div className="animate-pulse bg-gray-200 h-8 w-64 rounded mb-8"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-lg shadow animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setUploadToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!uploadToDelete) return;
+
+    setDeleting(uploadToDelete.id);
+    try {
+      const response = await fetch(`/api/uploads/${uploadToDelete.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        addToast('success', 'Upload succesvol verwijderd');
+        fetchUploads(); // Refresh the list
+        setDeleteModalOpen(false);
+        setUploadToDelete(null);
+      } else {
+        addToast('error', 'Fout bij het verwijderen van de upload');
+      }
+    } catch (error) {
+      console.error('Error deleting upload:', error);
+      addToast('error', 'Fout bij het verwijderen van de upload');
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
@@ -209,42 +199,7 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
-      <header className="bg-white dark:bg-slate-900 shadow-lg border-b border-gray-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-lg mr-4">
-                <Image
-                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                  alt="Elmar Services Logo"
-                  width={120}
-                  height={37}
-                  className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
-                />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Elmar Services</h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Factuurbeheer Systeem</p>
-              </div>
-            </div>
-            <nav className="flex space-x-8 items-center">
-              <Link href="/" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
-                <Home className="mr-2" size={18} />
-                Home
-              </Link>
-              <Link href="/upload" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
-                <Upload className="mr-2" size={18} />
-                Upload Bestand
-              </Link>
-              <Link href="/settings" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
-                <Settings className="mr-2" size={18} />
-                Instellingen
-              </Link>
-              <ThemeToggle />
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -256,28 +211,35 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {uploads.length === 0 ? (
+        {displayUploads.length === 0 ? (
           <div className="text-center py-16 fade-in">
             <div className="card-modern p-12 max-w-md mx-auto">
               <div className="text-slate-500 dark:text-slate-400 mb-6">
                 <FileText size={64} className="mx-auto mb-6 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">Geen uploads gevonden</h3>
+                <div className="text-xl font-semibold mb-2">
+                  {isReviewer ? 'Geen uploads om te reviewen' : 'Geen uploads gevonden'}
+                </div>
                 <p className="text-slate-600 dark:text-slate-400">
-                  Upload je eerste factuur bestand om te beginnen
+                  {isReviewer
+                    ? 'Er zijn momenteel geen uploads die wachten op review.'
+                    : 'Upload je eerste factuur bestand om te beginnen'
+                  }
                 </p>
               </div>
-              <Link
-                href="/upload"
-                className="btn-primary inline-flex items-center text-center w-full justify-center"
-              >
-                <Upload className="mr-2" size={20} />
-                Upload je eerste bestand
-              </Link>
+              {isUploader && (
+                <Link
+                  href="/upload"
+                  className="btn-primary inline-flex items-center text-center w-full justify-center"
+                >
+                  <Upload className="mr-2" size={20} />
+                  Upload je eerste bestand
+                </Link>
+              )}
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {uploads.map((upload, index) => (
+            {displayUploads.map((upload, index) => (
               <div
                 key={upload.id}
                 className="card-modern fade-in"
@@ -324,38 +286,46 @@ export default function Dashboard() {
                   <div className="flex gap-3">
                     {upload.status === 'reviewed' ? (
                       <>
-                        <button
-                          onClick={() => router.push(`/download/${upload.id}`)}
-                          className="flex-1 btn-primary flex items-center justify-center text-sm"
-                        >
-                          <Download className="mr-2" size={16} />
-                          Download
-                        </button>
-                        <button
-                          onClick={() => openFullscreen(upload)}
-                          className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-400 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center text-sm"
-                          title="Bekijken"
-                        >
-                          <Maximize2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(upload)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center text-sm"
-                          disabled={deleting === upload.id}
-                          title="Verwijderen"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {isUploader && (
+                          <button
+                            onClick={() => router.push(`/download/${upload.id}`)}
+                            className="flex-1 btn-primary flex items-center justify-center text-sm"
+                          >
+                            <Download className="mr-2" size={16} />
+                            Download
+                          </button>
+                        )}
+                        {isUploader && (
+                          <button
+                            onClick={() => openFullscreen(upload)}
+                            className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-400 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center text-sm"
+                            title="Bekijken"
+                          >
+                            <Maximize2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {isUploader && (
+                          <button
+                            onClick={() => handleDelete(upload)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center text-sm"
+                            disabled={deleting === upload.id}
+                            title="Verwijderen"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </>
                     ) : (
                       <>
-                        <button
-                          onClick={() => router.push(`/review/${upload.id}`)}
-                          className="flex-1 btn-primary flex items-center justify-center text-sm"
-                        >
-                          <Eye className="mr-2" size={16} />
-                          Review
-                        </button>
+                        {isReviewer && (
+                          <button
+                            onClick={() => router.push(`/review/${upload.id}`)}
+                            className="flex-1 btn-primary flex items-center justify-center text-sm"
+                          >
+                            <Eye className="mr-2" size={16} />
+                            Review
+                          </button>
+                        )}
                         <button
                           onClick={() => openFullscreen(upload)}
                           className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-400 text-white px-3 py-2 rounded-lg transition-colors flex items-center justify-center text-sm"

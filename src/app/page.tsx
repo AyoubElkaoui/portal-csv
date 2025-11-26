@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Upload, BarChart3, FileUp } from 'lucide-react';
 import { useState } from 'react';
 import { LoadingSpinner } from '@/components/Skeleton';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { Navbar } from '@/components/Navbar';
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -41,38 +40,7 @@ export default function Home() {
   };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-      <header className="bg-white dark:bg-slate-900 shadow-lg border-b border-gray-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-lg mr-4">
-                <Image
-                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                  alt="Elmar Services Logo"
-                  width={120}
-                  height={37}
-                  className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
-                />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Elmar Services</h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Factuurbeheer Systeem</p>
-              </div>
-            </div>
-            <nav className="flex space-x-8 items-center">
-              <Link href="/upload" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
-                <Upload className="mr-2" size={18} />
-                Upload Bestand
-              </Link>
-              <Link href="/dashboard" className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center transition-colors">
-                <BarChart3 className="mr-2" size={18} />
-                Dashboard
-              </Link>
-              <ThemeToggle />
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-slate-900 to-blue-600 dark:from-white dark:to-blue-400 bg-clip-text text-transparent">

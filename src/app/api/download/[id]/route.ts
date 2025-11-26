@@ -5,6 +5,33 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+function calculateDaysOpen(row: Record<string, unknown>) {
+  const invoiceDate = row['Factuurdatum'] || row['factuurdatum'];
+  const paymentTerm = row['Betalingstermijn'] || row['betalingstermijn'] || row['Termijn'] || row['termijn'];
+
+  if (!invoiceDate || !paymentTerm) return null;
+
+  try {
+    const invoiceDateObj = new Date(invoiceDate as string);
+    const currentDate = new Date();
+    const paymentTermDays = parseInt(paymentTerm as string);
+
+    if (isNaN(paymentTermDays)) return null;
+
+    // Calculate due date
+    const dueDate = new Date(invoiceDateObj);
+    dueDate.setDate(dueDate.getDate() + paymentTermDays);
+
+    // Calculate days remaining until due date (positive) or days overdue (negative)
+    const timeDiff = dueDate.getTime() - currentDate.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    return daysDiff;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -92,19 +119,24 @@ function generateExcelFile(reviewedData: Record<string, unknown>[], comments: st
 
   // Add the reviewed data
   if (reviewedData.length > 0) {
-    // Get headers from first row, excluding internal fields, Akkoord/Afgewezen columns, and adding review columns
+    // Get headers from first row, excluding internal fields, Akkoord/Afgewezen columns, and unwanted columns
     const originalHeaders = Object.keys(reviewedData[0]).filter(key =>
-      !key.startsWith('_') && !['Akkoord', 'Afgewezen'].includes(key)
+      !key.startsWith('_') && !['Akkoord', 'Afgewezen', 'Achterstallige dagen', 'Aantal dagen open'].includes(key)
     );
-    const headers = [...originalHeaders, 'Review_Status', 'Review_Opmerkingen'];
+    const headers = [...originalHeaders, 'Dagen open', 'Review_Status', 'Review_Opmerkingen'];
     excelData.push(headers);
 
     // Add data rows
     reviewedData.forEach((row: Record<string, unknown>) => {
       const originalValues = originalHeaders.map(header => String(row[header] ?? ''));
+
+      // Calculate days open using the same logic as review page
+      const daysOpen = calculateDaysOpen(row);
+      const daysOpenStr = daysOpen !== null ? (daysOpen > 0 ? `+${daysOpen}` : daysOpen.toString()) : '-';
+
       const status = row._status === 'issue' ? 'Probleem' : 'Goedgekeurd';
       const rowComments = String(row._comments || '');
-      excelData.push([...originalValues, status, rowComments]);
+      excelData.push([...originalValues, daysOpenStr, status, rowComments]);
     });
 
     // Auto-size columns
@@ -136,7 +168,7 @@ function generateExcelFile(reviewedData: Record<string, unknown>[], comments: st
 }
 
 function generatePDFFile(reviewedData: Record<string, unknown>[], comments: string, filename: string) {
-  const doc = new jsPDF();
+  const doc = new jsPDF('landscape');
 
   // Add title
   doc.setFontSize(16);
@@ -155,25 +187,30 @@ function generatePDFFile(reviewedData: Record<string, unknown>[], comments: stri
     yPosition += 10;
 
     doc.setFontSize(10);
-    const commentLines = doc.splitTextToSize(comments, 170);
+    const commentLines = doc.splitTextToSize(comments, 250); // Wider for landscape
     doc.text(commentLines, 20, yPosition);
     yPosition += commentLines.length * 5 + 10;
   }
 
   // Add the reviewed data table
   if (reviewedData.length > 0) {
-    // Get headers from first row, excluding internal fields, Akkoord/Afgewezen columns, and adding review columns
+    // Get headers from first row, excluding internal fields, Akkoord/Afgewezen columns, and unwanted columns
     const originalHeaders = Object.keys(reviewedData[0]).filter(key =>
-      !key.startsWith('_') && !['Akkoord', 'Afgewezen'].includes(key)
+      !key.startsWith('_') && !['Akkoord', 'Afgewezen', 'Achterstallige dagen', 'Aantal dagen open'].includes(key)
     );
-    const headers = [...originalHeaders, 'Review Status', 'Review Opmerkingen'];
+    const headers = [...originalHeaders, 'Dagen open', 'Review Status', 'Review Opmerkingen'];
 
     // Prepare table data
     const tableData = reviewedData.map((row: Record<string, unknown>) => {
       const originalValues = originalHeaders.map(header => String(row[header] ?? ''));
+
+      // Calculate days open using the same logic as review page
+      const daysOpen = calculateDaysOpen(row);
+      const daysOpenStr = daysOpen !== null ? (daysOpen > 0 ? `+${daysOpen}` : daysOpen.toString()) : '-';
+
       const status = row._status === 'issue' ? 'Probleem' : 'Goedgekeurd';
       const rowComments = String(row._comments || '');
-      return [...originalValues, status, rowComments];
+      return [...originalValues, daysOpenStr, status, rowComments];
     });
 
     // Add table
@@ -182,8 +219,8 @@ function generatePDFFile(reviewedData: Record<string, unknown>[], comments: stri
       body: tableData,
       startY: yPosition,
       styles: {
-        fontSize: 8,
-        cellPadding: 2,
+        fontSize: 7, // Smaller font for landscape
+        cellPadding: 1,
       },
       headStyles: {
         fillColor: [30, 64, 175], // Elmar blue
@@ -194,6 +231,11 @@ function generatePDFFile(reviewedData: Record<string, unknown>[], comments: stri
         fillColor: [248, 250, 252], // Light gray
       },
       margin: { top: 10 },
+      columnStyles: {
+        [headers.length - 3]: { cellWidth: 20 }, // Dagen open column
+        [headers.length - 2]: { cellWidth: 25 }, // Review Status column
+        [headers.length - 1]: { cellWidth: 40 }, // Review Opmerkingen column
+      },
     });
   }
 

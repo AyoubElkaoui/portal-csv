@@ -281,11 +281,14 @@ export default function ReviewPage() {
 
   const issuesCount = reviewedData.filter(row => row._status === 'issue').length;
 
-  // Get all column names from the data (excluding internal fields that start with _)
+  // Get all column names from the data (excluding internal fields and unwanted columns)
   const getAllColumns = () => {
     if (!reviewedData.length) return [];
     const firstRow = reviewedData[0];
-    return Object.keys(firstRow).filter(key => !key.startsWith('_'));
+    return Object.keys(firstRow).filter(key =>
+      !key.startsWith('_') &&
+      !['Achterstallige dagen', 'Aantal dagen open'].includes(key)
+    );
   };
 
   const allColumns = getAllColumns();
@@ -601,7 +604,7 @@ export default function ReviewPage() {
                     </div>
                   ))}
                   <div className="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2 mt-2">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Aantal dagen open:</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Dagen open:</span>
                     {(() => {
                       const daysOpen = calculateDaysOpen(reviewedData[selectedRowIndex] || {});
                       return daysOpen !== null ? (
