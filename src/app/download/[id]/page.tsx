@@ -12,7 +12,7 @@ export default function DownloadPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | 'pdf'>('csv');
+  const [selectedFormat, setSelectedFormat] = useState<'excel' | 'pdf'>('excel');
 
   const handleDownload = async () => {
     if (!params.id) return;
@@ -38,7 +38,7 @@ export default function DownloadPage() {
 
       // Get filename from content-disposition header
       const contentDisposition = response.headers.get('content-disposition');
-      let filename = `reviewed_file.${selectedFormat === 'excel' ? 'xlsx' : selectedFormat}`;
+      let filename = `reviewed_file.${selectedFormat === 'excel' ? 'xlsx' : 'pdf'}`;
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="(.+)"/);
         if (filenameMatch) {
@@ -101,11 +101,11 @@ export default function DownloadPage() {
             </div>
 
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Download Reviewed CSV
+              Download Reviewed Data
             </h1>
 
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Your CSV file has been reviewed and is ready for download.
+              Your data has been reviewed and is ready for download.
               Choose your preferred format below.
             </p>
 
@@ -113,19 +113,7 @@ export default function DownloadPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 Download Format
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  onClick={() => setSelectedFormat('csv')}
-                  className={`p-4 border rounded-lg text-center transition-colors ${
-                    selectedFormat === 'csv'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <FileText className="w-8 h-8 mx-auto mb-2 text-gray-600 dark:text-gray-400" />
-                  <div className="font-medium text-gray-900 dark:text-white">CSV</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">Comma-separated values</div>
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
                 <button
                   onClick={() => setSelectedFormat('excel')}
                   className={`p-4 border rounded-lg text-center transition-colors ${
