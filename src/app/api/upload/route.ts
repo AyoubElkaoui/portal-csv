@@ -113,7 +113,6 @@ export async function POST(request: NextRequest) {
       create: {
         id: uploaderId,
         email: 'elkaoui.a@gmail.com',
-        password: 'dummy-password',
         name: 'Default Uploader',
         role: 'uploader',
       },
@@ -132,10 +131,12 @@ export async function POST(request: NextRequest) {
     // Log the upload action
     await auditActions.uploadCreated(uploaderId, upload.id, file.name, ipAddress, userAgent);
 
-    // Send emails (optional)
+    // Send emails using settings from database
     try {
-      const reviewerEmail = 'info@akwebsolutions.nl';
-      const uploaderEmail = 'elkaoui.a@gmail.com';
+      // Get email addresses from settings
+      const settings = await prisma.settings.findFirst();
+      const reviewerEmail = settings?.reviewerEmail || 'info@akwebsolutions.nl';
+      const uploaderEmail = settings?.uploaderEmail || 'elkaoui.a@gmail.com';
 
       // Email to reviewer
       await resend.emails.send({

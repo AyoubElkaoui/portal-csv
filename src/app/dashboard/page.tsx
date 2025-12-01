@@ -92,13 +92,20 @@ export default function Dashboard() {
   const isReviewer = session.user?.role === 'reviewer';
   const isUploader = session.user?.role === 'uploader';
 
-  // Filter uploads based on role
-  const filteredUploads = isReviewer
-    ? uploads.filter(upload => upload.status === 'uploaded') // Only pending reviews for reviewer
-    : uploads; // All uploads for uploader
+  // API already filters based on role, so we just need to display them
+  // For reviewer: API returns only 'uploaded' status
+  // For uploader: API returns only their own uploads
+  
+  // For uploader, only show 'reviewed' uploads (ready to download)
+  const filteredUploads = isUploader 
+    ? uploads.filter(upload => upload.status === 'reviewed')
+    : uploads; // Reviewer sees all uploads from API (already filtered to 'uploaded')
 
-  // Limit reviewer to only one upload at a time
-  const displayUploads = isReviewer ? filteredUploads.slice(0, 1) : filteredUploads;
+  // Limit to only one upload at a time
+  const displayUploads = filteredUploads.slice(0, 1);
+
+  // Check if user can upload (only if no pending or reviewed uploads)
+  const canUpload = isUploader && uploads.length === 0;
 
   const addToast = (type: 'success' | 'error', message: string) => {
     const id = Date.now().toString();
@@ -202,12 +209,35 @@ export default function Dashboard() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Instructie Banner */}
+        <div className="mb-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
+            {isReviewer ? '👋 Welkom Reviewer!' : '👋 Welkom Anissa!'}
+          </h2>
+          <p className="text-blue-800 dark:text-blue-200 mb-4">
+            {isReviewer 
+              ? 'Als reviewer kun je één bestand tegelijk reviewen. Zodra je het bestand hebt gereviewed, verdwijnt het van jouw dashboard en verschijnt het bij de uploader voor download.'
+              : 'Je kunt één bestand tegelijk uploaden. Na upload wordt het bestand automatisch naar de reviewer gestuurd. Zodra de review klaar is, ontvang je een email en kun je het bestand hier downloaden. Na het downloaden wordt het automatisch verwijderd.'
+            }
+          </p>
+          {isUploader && !canUpload && (
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md p-3 mt-3">
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+                ⚠️ Je hebt al een bestand in behandeling. Je kunt pas een nieuw bestand uploaden nadat je het huidige bestand hebt gedownload.
+              </p>
+            </div>
+          )}
+        </div>
+
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-slate-900 dark:text-white">
-            Dashboard - Factuur Review Systeem
+            {isReviewer ? 'Review Dashboard' : 'Mijn Uploads'}
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-lg">
-            Beheer en review je factuur uploads professioneel en efficiënt
+            {isReviewer 
+              ? 'Review de facturen en keur ze goed of markeer problemen'
+              : 'Beheer je factuur uploads en download gereviewde bestanden'
+            }
           </p>
         </div>
 
@@ -217,44 +247,46 @@ export default function Dashboard() {
               <div className="text-slate-500 dark:text-slate-400 mb-6">
                 <FileText size={64} className="mx-auto mb-6 opacity-50" />
                 <div className="text-xl font-semibold mb-2">
-                  {isReviewer ? 'Geen uploads om te reviewen' : 'Geen uploads gevonden'}
+                  {isReviewer ? 'Geen uploads om te reviewen' : 'Geen uploads beschikbaar'}
                 </div>
                 <p className="text-slate-600 dark:text-slate-400">
                   {isReviewer
-                    ? 'Er zijn momenteel geen uploads die wachten op review.'
-                    : 'Upload je eerste factuur bestand om te beginnen'
+                    ? 'Er zijn momenteel geen uploads die wachten op review. Je krijgt een email zodra er een nieuw bestand is geupload.'
+                    : canUpload 
+                      ? 'Je hebt geen uploads in behandeling. Upload een nieuw bestand om te beginnen.' 
+                      : 'Zodra je bestand is gereviewed, verschijnt het hier voor download.'
                   }
                 </p>
               </div>
-              {isUploader && (
+              {canUpload && (
                 <Link
                   href="/upload"
                   className="btn-primary inline-flex items-center text-center w-full justify-center"
                 >
                   <Upload className="mr-2" size={20} />
-                  Upload je eerste bestand
+                  Upload nieuw bestand
                 </Link>
               )}
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="max-w-2xl mx-auto">
             {displayUploads.map((upload, index) => (
               <div
                 key={upload.id}
-                className="card-modern fade-in"
+                className="card-modern fade-in mb-6"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
                     <div className={`status-badge ${
                       upload.status === 'reviewed' ? 'status-reviewed' :
                       upload.status === 'uploaded' ? 'status-uploaded' : 'status-processing'
                     }`}>
                       {upload.status === 'reviewed'
-                        ? 'Goedgekeurd'
+                        ? '✓ Gereviewed - Klaar voor download'
                         : upload.status === 'uploaded'
-                        ? 'Wacht op Review'
+                        ? '⏳ Wacht op Review'
                         : upload.status}
                     </div>
                     <div className="text-slate-500 dark:text-slate-400 text-sm">

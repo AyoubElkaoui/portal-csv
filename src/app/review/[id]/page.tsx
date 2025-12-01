@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { MessageSquare, X, AlertTriangle, CheckCircle } from 'lucide-react';
+import { MessageSquare, X, AlertTriangle, CheckCircle, Search, Filter, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Home, ArrowLeft } from 'lucide-react';
@@ -43,7 +43,23 @@ export default function ReviewPage() {
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [tempComment, setTempComment] = useState('');
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [isFullscreen, setIsFullscreen] = useState(false); // Start normal size by default
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showColleagueModal, setShowColleagueModal] = useState(false);
+  const [selectedColleague, setSelectedColleague] = useState('');
+  
+  // Action buttons state
+  const [selectedAction, setSelectedAction] = useState<'herinnering' | 'bellen' | null>(null);
+  const [actionName, setActionName] = useState('');
+  
+  // New state for filters and pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDebtor, setFilterDebtor] = useState(''); // Filter voor debiteurnummer
+  const [filterCompany, setFilterCompany] = useState(''); // Filter voor bedrijfsnaam
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [filterRejected, setFilterRejected] = useState<'all' | 'rejected' | 'accepted'>('all');
+  const [filterDaysOpen, setFilterDaysOpen] = useState<'all' | 'overdue' | 'upcoming'>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
   const addToast = (type: 'success' | 'error', message: string) => {
     const id = Date.now().toString();
@@ -80,6 +96,23 @@ export default function ReviewPage() {
     }
   };
 
+  // Check if column is a currency column and format with € symbol
+  const isCurrencyColumn = (columnName: string) => {
+    const currencyKeywords = ['bedrag', 'Bedrag', 'totaal', 'Totaal', 'prijs', 'Prijs', 'kosten', 'Kosten', 'waarde', 'Waarde'];
+    // Exclude columns that contain these keywords
+    const excludeKeywords = ['verwerking', 'Verwerking', 'valuta', 'Valuta'];
+    if (excludeKeywords.some(keyword => columnName.includes(keyword))) return false;
+    return currencyKeywords.some(keyword => columnName.includes(keyword));
+  };
+
+  const formatCellValue = (columnName: string, value: unknown) => {
+    if (isCurrencyColumn(columnName) && value) {
+      const numValue = String(value).replace(/[^\d.,]/g, '');
+      return `€ ${numValue}`;
+    }
+    return String(value || '-');
+  };
+
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
@@ -90,12 +123,38 @@ export default function ReviewPage() {
       if (response.ok) {
         const data = await response.json();
         setUploadData(data);
-        // Initialize reviewed data with empty comments and no rejections
-        const initializedData = data.data.map((row: RowData) => ({
-          ...row,
-          _comments: '',
-          _rejected: false
-        }));
+        // Initialize reviewed data with empty comments and auto-reject negative days
+        const initializedData = data.data.map((row: RowData) => {
+          // Check both calculated and existing column for days open
+          let daysOpen = calculateDaysOpen(row);
+          
+          // If calculation fails, check if there's an existing "Aantal dagen openstaand" column
+          if (daysOpen === null) {
+            const existingDays = row['Aantal dagen openstaand'] || row['aantal dagen openstaand'];
+            if (existingDays) {
+              const parsedDays = parseInt(String(existingDays));
+              if (!isNaN(parsedDays)) {
+                daysOpen = parsedDays;
+              }
+            }
+          }
+          
+          const autoReject = daysOpen !== null && daysOpen < 0; // Auto-reject overdue invoices
+          
+          return {
+            ...row,
+            _comments: '',
+            _rejected: autoReject
+          };
+        });
+        
+        // Sort by debtor number (ascending) automatically
+        initializedData.sort((a, b) => {
+          const debtorA = String(a['Debiteurnummer'] || a['debiteurnummer'] || a['Debiteur'] || a['debiteur'] || '');
+          const debtorB = String(b['Debiteurnummer'] || b['debiteurnummer'] || b['Debiteur'] || b['debiteur'] || '');
+          return debtorA.localeCompare(debtorB, undefined, { numeric: true, sensitivity: 'base' });
+        });
+        
         setReviewedData(initializedData);
         setComments(data.upload.comments || '');
       }
@@ -109,6 +168,106 @@ export default function ReviewPage() {
   useEffect(() => {
     fetchUploadData();
   }, [fetchUploadData]);
+
+  // Filtered and paginated data with useMemo for performance - MUST be before early returns
+  const filteredAndPaginatedData = useMemo(() => {
+    if (!reviewedData || reviewedData.length === 0) {
+      return {
+        data: [],
+        totalRows: 0,
+        totalPages: 0,
+        startIndex: 0,
+        endIndex: 0,
+      };
+    }
+
+    let filtered = [...reviewedData];
+
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(row => {
+        return Object.values(row).some(value =>
+          String(value).toLowerCase().includes(searchLower)
+        );
+      });
+    }
+
+    // Apply debtor number filter
+    if (filterDebtor) {
+      const debtorLower = filterDebtor.toLowerCase();
+      filtered = filtered.filter(row => {
+        const debtorField = row['Debiteurnummer'] || row['debiteurnummer'] || row['Debiteur'] || row['debiteur'];
+        return String(debtorField).toLowerCase().includes(debtorLower);
+      });
+    }
+
+    // Apply company name filter
+    if (filterCompany) {
+      const companyLower = filterCompany.toLowerCase();
+      filtered = filtered.filter(row => {
+        const companyField = row['Bedrijfsnaam'] || row['bedrijfsnaam'] || row['Naam'] || row['naam'] || row['Relatie'] || row['relatie'];
+        return String(companyField).toLowerCase().includes(companyLower);
+      });
+    }
+
+    // Apply rejection filter
+    if (filterRejected === 'rejected') {
+      filtered = filtered.filter(row => row._rejected);
+    } else if (filterRejected === 'accepted') {
+      filtered = filtered.filter(row => !row._rejected);
+    }
+
+    // Apply days open filter
+    if (filterDaysOpen !== 'all') {
+      filtered = filtered.filter(row => {
+        const daysOpen = calculateDaysOpen(row);
+        if (daysOpen === null) return false;
+        if (filterDaysOpen === 'overdue') return daysOpen < 0;
+        if (filterDaysOpen === 'upcoming') return daysOpen >= 0;
+        return true;
+      });
+    }
+
+    // Calculate pagination
+    const totalRows = filtered.length;
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const paginatedData = filtered.slice(startIndex, endIndex);
+
+    return {
+      data: paginatedData,
+      totalRows,
+      totalPages,
+      startIndex,
+      endIndex: Math.min(endIndex, totalRows),
+    };
+  }, [reviewedData, searchTerm, filterDebtor, filterCompany, filterRejected, filterDaysOpen, currentPage, rowsPerPage]);
+
+  // Get all column names from the data (excluding internal fields and unwanted columns)
+  const allColumns = useMemo(() => {
+    if (!reviewedData || reviewedData.length === 0) return [];
+    const firstRow = reviewedData[0];
+    return Object.keys(firstRow).filter(key =>
+      !key.startsWith('_') &&
+      !['Achterstallige dagen', 'Aantal dagen open', 'BTW-verwerking', 'btw-verwerking', 'Btw-verwerking', 'Valuta', 'valuta'].includes(key)
+    );
+  }, [reviewedData]);
+
+  const issuesCount = useMemo(() => {
+    return reviewedData.filter(row => row._status === 'issue').length;
+  }, [reviewedData]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterDebtor, filterCompany, filterRejected, filterDaysOpen, rowsPerPage]);
+
+  // Update row operations to work with absolute indices
+  const getAbsoluteIndex = useCallback((relativeIndex: number) => {
+    return filteredAndPaginatedData.startIndex + relativeIndex;
+  }, [filteredAndPaginatedData.startIndex]);
 
   const updateRowComments = (index: number, comments: string) => {
     const newData = [...reviewedData];
@@ -125,6 +284,8 @@ export default function ReviewPage() {
   const handleRowClick = (index: number) => {
     setSelectedRowIndex(index);
     setTempComment(reviewedData[index]._comments || '');
+    setSelectedAction(null); // Reset action
+    setActionName(''); // Reset name
     setCommentModalOpen(true);
     // Automatically reject the row when clicking on comment
     toggleRowRejection(index);
@@ -132,10 +293,22 @@ export default function ReviewPage() {
 
   const handleCommentSave = () => {
     if (selectedRowIndex !== null) {
-      updateRowComments(selectedRowIndex, tempComment);
+      let finalComment = tempComment;
+      
+      // If action button was clicked, format the comment
+      if (selectedAction) {
+        const actionText = selectedAction === 'herinnering' 
+          ? 'Herinnering sturen'
+          : `Bellen: ${actionName}`;
+        finalComment = actionText;
+      }
+      
+      updateRowComments(selectedRowIndex, finalComment);
     }
     setCommentModalOpen(false);
     setSelectedRowIndex(null);
+    setSelectedAction(null);
+    setActionName('');
     setTempComment('');
   };
 
@@ -143,6 +316,8 @@ export default function ReviewPage() {
     setCommentModalOpen(false);
     setSelectedRowIndex(null);
     setTempComment('');
+    setSelectedAction(null);
+    setActionName('');
   };
 
   const addQuickComment = (comment: string) => {
@@ -279,20 +454,6 @@ export default function ReviewPage() {
     );
   }
 
-  const issuesCount = reviewedData.filter(row => row._status === 'issue').length;
-
-  // Get all column names from the data (excluding internal fields and unwanted columns)
-  const getAllColumns = () => {
-    if (!reviewedData.length) return [];
-    const firstRow = reviewedData[0];
-    return Object.keys(firstRow).filter(key =>
-      !key.startsWith('_') &&
-      !['Achterstallige dagen', 'Aantal dagen open'].includes(key)
-    );
-  };
-
-  const allColumns = getAllColumns();
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
@@ -370,7 +531,7 @@ export default function ReviewPage() {
 
         <div className="card-modern p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Upload Details</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <strong className="text-gray-900 dark:text-white">Bestandsnaam:</strong> <span className="text-gray-700 dark:text-gray-300">{uploadData.upload.filename}</span>
             </div>
@@ -378,10 +539,10 @@ export default function ReviewPage() {
               <strong className="text-gray-900 dark:text-white">Status:</strong> <span className="text-gray-700 dark:text-gray-300">{uploadData.upload.status}</span>
             </div>
             <div>
-              <strong className="text-gray-900 dark:text-white">Geüpload:</strong> <span className="text-gray-700 dark:text-gray-300">{new Date(uploadData.upload.uploadedAt).toLocaleString('nl-NL')}</span>
+              <strong className="text-gray-900 dark:text-white">Totaal rijen:</strong> <span className="text-gray-700 dark:text-gray-300">{reviewedData.length}</span>
             </div>
             <div>
-              <strong className="text-gray-900 dark:text-white">Aantal rijen:</strong> <span className="text-gray-700 dark:text-gray-300">{reviewedData.length}</span>
+              <strong className="text-gray-900 dark:text-white">Getoonde rijen:</strong> <span className="text-gray-700 dark:text-gray-300">{filteredAndPaginatedData.totalRows}</span>
             </div>
           </div>
           {issuesCount > 0 && (
@@ -391,9 +552,164 @@ export default function ReviewPage() {
           )}
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="card-modern p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            {/* Search Bar */}
+            <div className="flex-1 w-full md:max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Zoek in alle kolommen..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                />
+              </div>
+            </div>
+
+            {/* Filter Toggle Button */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+              <Filter size={18} />
+              {showFilters ? 'Verberg Filters' : 'Toon Filters'}
+            </button>
+
+            {/* Rows per page selector */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Rijen per pagina:</label>
+              <select
+                value={rowsPerPage}
+                onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={250}>250</option>
+                <option value={500}>500</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Collapsible Filters */}
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Debtor Number Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Debiteurnummer</label>
+                  <input
+                    type="text"
+                    placeholder="Filter op debiteurnummer..."
+                    value={filterDebtor}
+                    onChange={(e) => setFilterDebtor(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                  />
+                </div>
+
+                {/* Company Name Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bedrijfsnaam</label>
+                  <input
+                    type="text"
+                    placeholder="Filter op bedrijfsnaam..."
+                    value={filterCompany}
+                    onChange={(e) => setFilterCompany(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                  />
+                </div>
+
+                {/* Rejection Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status Filter</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFilterRejected('all')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        filterRejected === 'all'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      Alle
+                    </button>
+                    <button
+                      onClick={() => setFilterRejected('rejected')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        filterRejected === 'rejected'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      Afgewezen
+                    </button>
+                    <button
+                      onClick={() => setFilterRejected('accepted')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        filterRejected === 'accepted'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      Geaccepteerd
+                    </button>
+                  </div>
+                </div>
+
+                {/* Days Open Filter */}
+                <div className="lg:col-span-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dagen Open Filter</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setFilterDaysOpen('all')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        filterDaysOpen === 'all'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      Alle
+                    </button>
+                    <button
+                      onClick={() => setFilterDaysOpen('overdue')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        filterDaysOpen === 'overdue'
+                          ? 'bg-orange-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      Achterstallig
+                    </button>
+                    <button
+                      onClick={() => setFilterDaysOpen('upcoming')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        filterDaysOpen === 'upcoming'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      Niet Verlopen
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className={`card-modern p-6 mb-6 ${isFullscreen ? 'fixed inset-4 z-40 bg-white dark:bg-gray-800 overflow-auto' : ''}`}>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Data Review</h2>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Data Review</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Rijen {filteredAndPaginatedData.startIndex + 1} - {filteredAndPaginatedData.endIndex} van {filteredAndPaginatedData.totalRows}
+                {filteredAndPaginatedData.totalRows !== reviewedData.length && ` (gefilterd van ${reviewedData.length} totaal)`}
+              </p>
+            </div>
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               className="btn-primary text-sm"
@@ -407,31 +723,22 @@ export default function ReviewPage() {
 
         {/* Mobile View - Card Layout with All Data */}
         <div className="block md:hidden space-y-4">
-          {reviewedData.map((row, index) => (
-            <div key={index} className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border ${row._rejected ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
+          {filteredAndPaginatedData.data.map((row, relativeIndex) => {
+            const absoluteIndex = getAbsoluteIndex(relativeIndex);
+            const daysOpen = calculateDaysOpen(row);
+            const isOverdue = daysOpen !== null && daysOpen < 0;
+            return (
+            <div key={absoluteIndex} className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border ${isOverdue ? 'border-red-400 dark:border-red-500 bg-red-100 dark:bg-red-900/30' : row._rejected ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <div className="font-semibold text-gray-900 dark:text-white">
-                    {String(row['Factuurnummer'] || row['factuurnummer'] || `Rij ${index + 1}`)}
+                    {String(row['Factuurnummer'] || row['factuurnummer'] || `Rij ${absoluteIndex + 1}`)}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {String(row['Relatienaam'] || row['relatienaam'] || '')}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                    €{String(row['Factuurbedrag'] || row['factuurbedrag'] || '0')}
-                  </div>
-                  <div className="text-sm mt-1">
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Dagen open: </span>
-                    {(() => {
-                      const daysOpen = calculateDaysOpen(row);
-                      return daysOpen !== null ? (
-                        <span className={daysOpen < 0 ? 'text-orange-600 dark:text-orange-400 font-semibold' : 'text-gray-700 dark:text-gray-300'}>
-                          {daysOpen > 0 ? `+${daysOpen}` : daysOpen}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 dark:text-gray-500">-</span>
-                      );
-                    })()}
+                    {formatCellValue('Factuurbedrag', row['Factuurbedrag'] || row['factuurbedrag'] || '0')}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -439,13 +746,13 @@ export default function ReviewPage() {
                     <input
                       type="checkbox"
                       checked={row._rejected || false}
-                      onChange={() => toggleRowRejection(index)}
+                      onChange={() => toggleRowRejection(absoluteIndex)}
                       className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
                     />
                     <span className="text-xs text-red-600 dark:text-red-400">Afwijzen</span>
                   </label>
                   <button
-                    onClick={() => handleRowClick(index)}
+                    onClick={() => handleRowClick(absoluteIndex)}
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                   >
                     <MessageSquare size={16} />
@@ -457,7 +764,7 @@ export default function ReviewPage() {
               <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400 mt-3">
                 {allColumns.slice(0, 6).map((column) => (
                   <div key={column} className="truncate">
-                    <span className="font-medium">{column}:</span> {String(row[column] || '-')}
+                    <span className="font-medium">{column}:</span> {formatCellValue(column, row[column])}
                   </div>
                 ))}
                 {allColumns.length > 6 && (
@@ -473,83 +780,149 @@ export default function ReviewPage() {
                 </div>
               )}
             </div>
-          ))}
+          );
+          })}
         </div>
 
         {/* Desktop View - Dynamic Table with All Columns */}
-        <div className="hidden md:block overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg">
-          <table className="w-full min-w-max table-auto border-collapse">
-            <thead>
+        <div className="hidden md:block overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg" style={{ maxHeight: isFullscreen ? 'calc(100vh - 300px)' : '600px' }}>
+          <table className="w-full table-auto border-collapse text-sm">
+            <thead className="sticky top-0 z-20">
               <tr className="bg-gray-100 dark:bg-gray-700">
-                <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-16 sticky left-0 bg-gray-100 dark:bg-gray-700 z-10">
+                <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-12 sticky left-0 bg-gray-100 dark:bg-gray-700 z-30">
                   #
                 </th>
                 {allColumns.map((column) => (
-                  <th key={column} className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 min-w-32">
+                  <th key={column} className="px-2 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600" style={{ minWidth: '120px', maxWidth: '200px' }}>
                     {column}
                   </th>
                 ))}
-                <th className="px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-24">
-                  Dagen open
-                </th>
-                <th className="px-3 py-2 text-center text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-20">
+                <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-16">
                   Afwijzen
                 </th>
-                <th className="px-3 py-2 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 border-b w-32 sticky right-0 bg-gray-100 dark:bg-gray-700 z-10">
+                <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 border-b w-24 sticky right-0 bg-gray-100 dark:bg-gray-700 z-30">
                   Opmerking
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800">
-              {reviewedData.map((row, index) => (
+              {filteredAndPaginatedData.data.map((row, relativeIndex) => {
+                const absoluteIndex = getAbsoluteIndex(relativeIndex);
+                const daysOpen = calculateDaysOpen(row);
+                const isOverdue = daysOpen !== null && daysOpen < 0;
+                return (
                 <tr
-                  key={index}
-                  className={`border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${row._rejected ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                  key={absoluteIndex}
+                  className={`border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isOverdue ? 'bg-red-100 dark:bg-red-900/30' : row._rejected ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
                 >
-                  <td className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-600 text-center sticky left-0 bg-white dark:bg-gray-800 z-10">
-                    {index + 1}
+                  <td className="px-2 py-2 text-xs text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-600 text-center sticky left-0 bg-white dark:bg-gray-800 z-20">
+                    {absoluteIndex + 1}
                   </td>
                   {allColumns.map((column) => (
-                    <td key={column} className="px-3 py-2 text-sm text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-600">
-                      <div className="truncate max-w-48" title={String(row[column] || '')}>
-                        {String(row[column] || '-')}
+                    <td key={column} className="px-2 py-2 text-xs text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-600">
+                      <div className="truncate" style={{ maxWidth: '180px' }} title={String(row[column] || '')}>
+                        {formatCellValue(column, row[column])}
                       </div>
                     </td>
                   ))}
-                  <td className="px-3 py-2 border-r border-gray-200 dark:border-gray-600 text-center">
-                    {(() => {
-                      const daysOpen = calculateDaysOpen(row);
-                      return daysOpen !== null ? (
-                        <span className={`font-medium ${daysOpen < 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                          {daysOpen > 0 ? `+${daysOpen}` : daysOpen}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 dark:text-gray-500">-</span>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-3 py-2 border-r border-gray-200 dark:border-gray-600 text-center">
+                  <td className="px-2 py-2 border-r border-gray-200 dark:border-gray-600 text-center">
                     <input
                       type="checkbox"
                       checked={row._rejected || false}
-                      onChange={() => toggleRowRejection(index)}
+                      onChange={() => toggleRowRejection(absoluteIndex)}
                       className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
                     />
                   </td>
-                  <td className="px-3 py-2 sticky right-0 bg-white dark:bg-gray-800 z-10">
+                  <td className="px-2 py-2 sticky right-0 bg-white dark:bg-gray-800 z-20">
                     <button
-                      onClick={() => handleRowClick(index)}
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                      onClick={() => handleRowClick(absoluteIndex)}
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-xs"
                     >
-                      <MessageSquare size={14} />
-                      <span>{row._comments ? 'Bewerken' : 'Toevoegen'}</span>
+                      <MessageSquare size={12} />
+                      <span>{row._comments ? 'Edit' : 'Add'}</span>
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredAndPaginatedData.totalPages > 1 && (
+          <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              Pagina {currentPage} van {filteredAndPaginatedData.totalPages}
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Eerste
+              </button>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+              >
+                <ChevronLeft size={16} />
+                Vorige
+              </button>
+              
+              {/* Page numbers */}
+              <div className="flex gap-1">
+                {Array.from({ length: Math.min(5, filteredAndPaginatedData.totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (filteredAndPaginatedData.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= filteredAndPaginatedData.totalPages - 2) {
+                    pageNum = filteredAndPaginatedData.totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 rounded-md transition-colors ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(filteredAndPaginatedData.totalPages, prev + 1))}
+                disabled={currentPage === filteredAndPaginatedData.totalPages}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+              >
+                Volgende
+                <ChevronRight size={16} />
+              </button>
+              
+              <button
+                onClick={() => setCurrentPage(filteredAndPaginatedData.totalPages)}
+                disabled={currentPage === filteredAndPaginatedData.totalPages}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Laatste
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="card-modern p-6">
@@ -600,7 +973,7 @@ export default function ReviewPage() {
                   {allColumns.map((column) => (
                     <div key={column} className="flex justify-between">
                       <span className="font-medium text-gray-700 dark:text-gray-300">{column}:</span>
-                      <span className="text-gray-900 dark:text-white ml-2 truncate">{String(reviewedData[selectedRowIndex]?.[column] || '-')}</span>
+                      <span className="text-gray-900 dark:text-white ml-2 truncate">{formatCellValue(column, reviewedData[selectedRowIndex]?.[column])}</span>
                     </div>
                   ))}
                   <div className="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2 mt-2">
@@ -636,49 +1009,117 @@ export default function ReviewPage() {
               </label>
             </div>
 
+            {/* Action Buttons - Herinnering / Bellen */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Snelle acties:
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Actie selecteren:
               </label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {quickActions.map((action) => (
-                  <button
-                    key={action.label}
-                    onClick={() => {
-                      if (action.label === 'Namen') {
-                        // Show colleague selection
-                        const colleague = prompt('Selecteer een collega:', colleagues[0]);
-                        if (colleague && colleagues.includes(colleague)) {
-                          addQuickComment(action.value + colleague);
-                        }
-                      } else {
-                        addQuickComment(action.value);
-                      }
-                    }}
-                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                  >
-                    {action.label}
-                  </button>
-                ))}
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() => {
+                    setSelectedAction('herinnering');
+                    setActionName('');
+                  }}
+                  className={`flex-1 px-4 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
+                    selectedAction === 'herinnering'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800'
+                  }`}
+                >
+                  <Mail size={18} />
+                  Herinnering
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedAction('bellen');
+                    setActionName('');
+                  }}
+                  className={`flex-1 px-4 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
+                    selectedAction === 'bellen'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
+                  }`}
+                >
+                  <MessageSquare size={18} />
+                  Bellen
+                </button>
               </div>
+
+              {/* Show name input when Bellen is selected */}
+              {selectedAction === 'bellen' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Naam invoeren:
+                  </label>
+                  <input
+                    type="text"
+                    value={actionName}
+                    onChange={(e) => setActionName(e.target.value)}
+                    placeholder="Voer naam in..."
+                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    autoFocus
+                  />
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    Dit wordt opgeslagen als: &quot;Bellen: {actionName || '[naam]'}&quot;
+                  </p>
+                </div>
+              )}
+
+              {/* Show confirmation for Herinnering */}
+              {selectedAction === 'herinnering' && (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
+                    Dit wordt opgeslagen als: &quot;Herinnering sturen&quot;
+                  </p>
+                </div>
+              )}
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Opmerking (handmatig toevoegen/bewerken)
-              </label>
-              <textarea
-                value={tempComment}
-                onChange={(e) => setTempComment(e.target.value)}
-                placeholder="Voeg een opmerking toe bij deze rij..."
-                className="w-full h-24 p-3 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 dark:text-white bg-white dark:bg-gray-700"
-              />
-            </div>
+            {/* Only show quick actions and comment textarea if no action is selected */}
+            {!selectedAction && (
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Snelle acties:
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {quickActions.map((action) => (
+                      <button
+                        key={action.label}
+                        onClick={() => {
+                          if (action.label === 'Namen') {
+                            setShowColleagueModal(true);
+                          } else {
+                            addQuickComment(action.value);
+                          }
+                        }}
+                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                      >
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Opmerking (handmatig toevoegen/bewerken)
+                  </label>
+                  <textarea
+                    value={tempComment}
+                    onChange={(e) => setTempComment(e.target.value)}
+                    placeholder="Voeg een opmerking toe bij deze rij..."
+                    className="w-full h-24 p-3 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="flex gap-3">
               <button
                 onClick={handleCommentSave}
-                className="flex-1 btn-primary"
+                disabled={selectedAction === 'bellen' && !actionName.trim()}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Opslaan
               </button>
@@ -688,6 +1129,71 @@ export default function ReviewPage() {
               >
                 Annuleren
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Colleague Selection Modal */}
+      {showColleagueModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Selecteer Collega
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowColleagueModal(false);
+                    setSelectedColleague('');
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-2 mb-6">
+                {colleagues.map((colleague) => (
+                  <button
+                    key={colleague}
+                    onClick={() => setSelectedColleague(colleague)}
+                    className={`w-full px-4 py-3 text-left rounded-lg transition-colors ${
+                      selectedColleague === colleague
+                        ? 'bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500 text-blue-900 dark:text-blue-100'
+                        : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
+                    }`}
+                  >
+                    {colleague}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (selectedColleague) {
+                      addQuickComment(`Overgedragen aan: ${selectedColleague}`);
+                      setShowColleagueModal(false);
+                      setSelectedColleague('');
+                    }
+                  }}
+                  disabled={!selectedColleague}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Toevoegen
+                </button>
+                <button
+                  onClick={() => {
+                    setShowColleagueModal(false);
+                    setSelectedColleague('');
+                  }}
+                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors font-medium"
+                >
+                  Annuleren
+                </button>
+              </div>
             </div>
           </div>
         </div>

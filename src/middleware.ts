@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
   // Allow Next.js internals and public files
   if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
     pathname === '/favicon.ico' ||
     PUBLIC_FILE.test(pathname) ||

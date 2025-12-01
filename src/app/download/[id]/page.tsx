@@ -101,17 +101,19 @@ export default function DownloadPage() {
             </div>
 
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Download Reviewed Data
+              Download Gereviewed Bestand
             </h1>
 
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Your data has been reviewed and is ready for download.
-              Choose your preferred format below.
+              Je bestand is gereviewed en klaar voor download. 
+              <strong className="block mt-2 text-gray-900 dark:text-white">
+                Let op: Het bestand wordt automatisch verwijderd zodra je het hebt gedownload.
+              </strong>
             </p>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Download Format
+                Kies je download formaat
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto">
                 <button
@@ -125,6 +127,7 @@ export default function DownloadPage() {
                   <FileText className="w-8 h-8 mx-auto mb-2 text-green-600 dark:text-green-400" />
                   <div className="font-medium text-gray-900 dark:text-white">Excel</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">.xlsx spreadsheet</div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">Bewerkbaar formaat</div>
                 </button>
                 <button
                   onClick={() => setSelectedFormat('pdf')}
@@ -137,6 +140,7 @@ export default function DownloadPage() {
                   <FileText className="w-8 h-8 mx-auto mb-2 text-red-600 dark:text-red-400" />
                   <div className="font-medium text-gray-900 dark:text-white">PDF</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Portable document</div>
+                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">Clean & professioneel</div>
                 </button>
               </div>
             </div>

@@ -21,17 +21,18 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-6">
           <div className="flex items-center">
-            <div className="p-2 rounded-lg mr-4">
+            <div className="mr-4">
               <Image
-                src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
+                src="/elmar-logo.png"
                 alt="Elmar Services Logo"
-                width={120}
-                height={37}
-                className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
+                width={200}
+                height={60}
+                className="h-10 w-auto"
+                priority
               />
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">Elmar Services</h1>
+            <div className="hidden md:block">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">CSV Portal</h1>
               <p className="text-sm text-slate-600 dark:text-slate-400">Factuurbeheer Systeem</p>
             </div>
           </div>

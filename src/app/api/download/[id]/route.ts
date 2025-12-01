@@ -82,6 +82,11 @@ export async function GET(
       await auditActions.uploadDownloaded(upload.userId, upload.id);
     }
 
+    // Delete the upload after download (automatic cleanup)
+    await prisma.upload.delete({
+      where: { id },
+    });
+
     if (format === 'excel') {
       return generateExcelFile(reviewedData, comments, upload.filename);
     } else if (format === 'pdf') {

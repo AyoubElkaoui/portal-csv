@@ -13,7 +13,7 @@ datasource db {
 model User {
   id        String     @id @default(cuid())
   email     String     @unique
-  password  String
+  password  String?
   name      String?
   role      String     @default("uploader") // "uploader" or "reviewer"
   createdAt DateTime   @default(now())
@@ -47,4 +47,13 @@ model AuditLog {
   createdAt   DateTime @default(now())
 
   @@map("audit_logs")
+}
+
+model Settings {
+  id             String   @id @default(cuid())
+  uploaderEmail  String   @default("anissa@example.com") @map("uploaderemail")
+  reviewerEmail  String   @default("reviewer@example.com") @map("revieweremail")
+  updatedAt      DateTime @updatedAt @map("updatedat")
+
+  @@map("settings")
 }
