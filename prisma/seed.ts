@@ -4,39 +4,28 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create users first
-  const anissaEmail = process.env.ANISSA_EMAIL || 'anissa@example.com';
-  const reviewerEmail = process.env.REVIEWER_EMAIL || 'reviewer@example.com';
-  const anissaPassword = process.env.ANISSA_PASSWORD || 'anissa123';
-  const reviewerPassword = process.env.REVIEWER_PASSWORD || 'reviewer123';
-
-  // Hash passwords
-  const hashedAnissaPassword = await bcrypt.hash(anissaPassword, 10);
-  const hashedReviewerPassword = await bcrypt.hash(reviewerPassword, 10);
+  // Create default users - JE KUNT DIT LATER AANPASSEN IN DE APP!
+  const hashedPassword = await bcrypt.hash('anissa123', 10);
 
   await prisma.user.upsert({
-    where: { email: anissaEmail },
-    update: {
-      password: hashedAnissaPassword,
-    },
+    where: { email: 'anissa@elmarservices.nl' },
+    update: {},
     create: {
-      email: anissaEmail,
+      email: 'anissa@elmarservices.nl',
       name: 'Anissa',
       role: 'uploader',
-      password: hashedAnissaPassword,
+      password: hashedPassword,
     },
   });
 
   await prisma.user.upsert({
-    where: { email: reviewerEmail },
-    update: {
-      password: hashedReviewerPassword,
-    },
+    where: { email: 'reviewer@elmarservices.nl' },
+    update: {},
     create: {
-      email: reviewerEmail,
+      email: 'reviewer@elmarservices.nl',
       name: 'Reviewer',
       role: 'reviewer',
-      password: hashedReviewerPassword,
+      password: hashedPassword,
     },
   });
 
@@ -46,8 +35,8 @@ async function main() {
     update: {},
     create: {
       id: 'default',
-      uploaderEmail: anissaEmail,
-      reviewerEmail: reviewerEmail,
+      uploaderEmail: 'anissa@elmarservices.nl',
+      reviewerEmail: 'reviewer@elmarservices.nl',
     },
   });
 
