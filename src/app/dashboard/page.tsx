@@ -7,18 +7,6 @@ import { useSession } from 'next-auth/react';
 import { FileText, Eye, Download, Trash2, Mail, AlertTriangle, X, CheckCircle, Maximize2, Upload } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 
-// Extend NextAuth session type to include role
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      role?: string;
-    };
-  }
-}
-
 type Upload = {
   id: string;
   filename: string;

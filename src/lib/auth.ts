@@ -1,23 +1,7 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { AuthOptions } from 'next-auth';
-
-// Simple in-memory allowed users. Prefer setting via environment variables in production.
-const USERS = [
-  {
-    id: 'anissa',
-    name: 'Anissa',
-    email: process.env.ANISSA_EMAIL || 'anissa@example.com',
-    password: process.env.ANISSA_PASSWORD || 'anissa-password',
-    role: 'uploader',
-  },
-  {
-    id: 'reviewer',
-    name: 'Reviewer',
-    email: process.env.REVIEWER_EMAIL || 'reviewer@example.com',
-    password: process.env.REVIEWER_PASSWORD || 'reviewer-password',
-    role: 'reviewer',
-  },
-];
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -27,27 +11,51 @@ export const authOptions: AuthOptions = {
         email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials: any) {
-        if (!credentials) return null;
-        const user = USERS.find(u => u.email === credentials.email && u.password === credentials.password);
-        if (user) {
-          return { id: user.id, name: user.name, email: user.email, role: user.role };
+      async authorize(credentials: Record<string, string> | undefined) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
         }
-        return null;
+
+        try {
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            name: user.name || user.email,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
+        token.role = (user as { role?: string }).role;
+        token.id = user.id;
       }
       return token;
     },
-    async session({ session, token }: any) {
-      if (token) {
-        session.user = session.user || {};
-        session.user.role = token.role;
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.role = token.role as string;
+        session.user.id = token.id as string;
       }
       return session;
     },
@@ -55,5 +63,9 @@ export const authOptions: AuthOptions = {
   pages: {
     signIn: '/signin',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'dev-secret',
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
