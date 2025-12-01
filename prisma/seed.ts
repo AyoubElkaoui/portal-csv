@@ -4,12 +4,17 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create default users - JE KUNT DIT LATER AANPASSEN IN DE APP!
+  // Create default users - wachtwoord: anissa123
   const hashedPassword = await bcrypt.hash('anissa123', 10);
 
+  // Update or create users
   await prisma.user.upsert({
     where: { email: 'anissa@elmarservices.nl' },
-    update: {},
+    update: {
+      password: hashedPassword, // Update password to ensure it's correct
+      name: 'Anissa',
+      role: 'uploader',
+    },
     create: {
       email: 'anissa@elmarservices.nl',
       name: 'Anissa',
@@ -20,7 +25,11 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: 'reviewer@elmarservices.nl' },
-    update: {},
+    update: {
+      password: hashedPassword, // Update password to ensure it's correct
+      name: 'Reviewer',
+      role: 'reviewer',
+    },
     create: {
       email: 'reviewer@elmarservices.nl',
       name: 'Reviewer',
