@@ -149,7 +149,7 @@ export default function ReviewPage() {
         });
         
         // Sort by debtor number (ascending) automatically
-        initializedData.sort((a, b) => {
+        initializedData.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
           const debtorA = String(a['Debiteurnummer'] || a['debiteurnummer'] || a['Debiteur'] || a['debiteur'] || '');
           const debtorB = String(b['Debiteurnummer'] || b['debiteurnummer'] || b['Debiteur'] || b['debiteur'] || '');
           return debtorA.localeCompare(debtorB, undefined, { numeric: true, sensitivity: 'base' });
