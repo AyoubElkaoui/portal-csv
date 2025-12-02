@@ -78,6 +78,14 @@ export async function getUserByEmail(email: string): Promise<User | null> {
 
 // Settings
 export async function getSettings(): Promise<Settings> {
+  // Use environment variables for production (Vercel has read-only filesystem)
+  if (process.env.VERCEL) {
+    return {
+      uploaderEmail: process.env.UPLOADER_EMAIL || 'anissa@elmarservices.com',
+      reviewerEmail: process.env.REVIEWER_EMAIL || 'info@akwebsolutions.nl'
+    };
+  }
+
   await ensureDataDir();
   try {
     const data = await fs.readFile(SETTINGS_FILE, 'utf-8');
@@ -93,6 +101,12 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export async function updateSettings(settings: Partial<Settings>): Promise<Settings> {
+  // On Vercel, settings are read-only from environment variables
+  if (process.env.VERCEL) {
+    console.warn('Settings cannot be updated on Vercel. Configure via environment variables.');
+    return getSettings(); // Return current settings
+  }
+
   const current = await getSettings();
   const updated = { ...current, ...settings };
   await fs.writeFile(SETTINGS_FILE, JSON.stringify(updated, null, 2));
