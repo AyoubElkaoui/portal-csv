@@ -74,7 +74,17 @@ export async function GET(
     }
 
     // Parse the reviewed data and comments
-    const reviewedData = JSON.parse(upload.reviewedData || '[]');
+    let reviewedData;
+    try {
+      reviewedData = JSON.parse(upload.reviewedData || '[]');
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Data preview:', upload.reviewedData?.substring(0, 200));
+      return NextResponse.json(
+        { error: 'Data kon niet worden gelezen. Upload het bestand opnieuw.' },
+        { status: 500 }
+      );
+    }
     const comments = upload.comments || '';
 
     // Create audit log
