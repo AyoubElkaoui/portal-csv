@@ -7,6 +7,15 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Verhoog body size limit naar 50MB voor grote CSV files
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
+  },
+};
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
