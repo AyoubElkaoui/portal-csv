@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auditActions } from '@/lib/audit';
+import { getUpload, getUploadData, deleteUpload } from '@/lib/storage';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -39,25 +38,9 @@ export async function GET(
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const format = searchParams.get('format') || 'excel'; // Default to excel
+    const format = searchParams.get('format') || 'excel';
 
-    const upload = await prisma.upload.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        filename: true,
-        status: true,
-        reviewedData: true,
-        comments: true,
-        userId: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+    const upload = await getUpload(id);
 
     if (!upload) {
       return NextResponse.json(
@@ -73,29 +56,12 @@ export async function GET(
       );
     }
 
-    // Parse the reviewed data and comments
-    let reviewedData;
-    try {
-      reviewedData = JSON.parse(upload.reviewedData || '[]');
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      console.error('Data preview:', upload.reviewedData?.substring(0, 200));
-      return NextResponse.json(
-        { error: 'Data kon niet worden gelezen. Upload het bestand opnieuw.' },
-        { status: 500 }
-      );
-    }
+    // Get the reviewed data
+    const reviewedData = await getUploadData(id);
     const comments = upload.comments || '';
 
-    // Create audit log
-    if (upload.userId) {
-      await auditActions.uploadDownloaded(upload.userId, upload.id);
-    }
-
     // Delete the upload after download (automatic cleanup)
-    await prisma.upload.delete({
-      where: { id },
-    });
+    await deleteUpload(id);
 
     if (format === 'excel') {
       return generateExcelFile(reviewedData, comments, upload.filename);

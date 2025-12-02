@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getSettings, updateSettings } from '@/lib/storage';
 
 export async function GET() {
   try {
-    const settings = await prisma.settings.findFirst();
+    const settings = await getSettings();
     return NextResponse.json({ 
-      uploaderEmail: settings?.uploaderEmail || 'anissa@example.com',
-      reviewerEmail: settings?.reviewerEmail || 'reviewer@example.com'
+      uploaderEmail: settings.uploaderEmail,
+      reviewerEmail: settings.reviewerEmail
     });
   } catch (error) {
     console.error('Failed to get settings:', error);
@@ -27,18 +27,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid reviewer email address' }, { status: 400 });
     }
 
-    // Upsert settings (create if doesn't exist, update if it does)
-    const settings = await prisma.settings.upsert({
-      where: { id: 'default' },
-      update: {
-        ...(uploaderEmail && { uploaderEmail }),
-        ...(reviewerEmail && { reviewerEmail }),
-      },
-      create: {
-        id: 'default',
-        uploaderEmail: uploaderEmail || 'anissa@example.com',
-        reviewerEmail: reviewerEmail || 'reviewer@example.com',
-      },
+    const settings = await updateSettings({
+      ...(uploaderEmail && { uploaderEmail }),
+      ...(reviewerEmail && { reviewerEmail }),
     });
 
     return NextResponse.json({ 

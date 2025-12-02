@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getUserByEmail, getUsers } from '@/lib/storage';
 import bcrypt from 'bcryptjs';
+import fs from 'fs/promises';
+import path from 'path';
 
 // GET - Get current user info (not password)
 export async function GET() {
@@ -13,21 +15,18 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-    });
+    const user = await getUserByEmail(session.user.email);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
@@ -46,57 +45,57 @@ export async function POST(req: NextRequest) {
     const { email, password, currentPassword } = await req.json();
 
     // Get current user
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+    const user = await getUserByEmail(session.user.email);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Verify current password if it exists
-    if (user.password && currentPassword) {
+    // Verify current password if changing password
+    if (password && currentPassword) {
       const isValid = await bcrypt.compare(currentPassword, user.password);
       if (!isValid) {
-        return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 });
+        return NextResponse.json({ error: 'Huidig wachtwoord is onjuist' }, { status: 400 });
       }
     }
 
-    // Prepare update data
-    const updateData: { email?: string; password?: string } = {};
+    // Get all users
+    const users = await getUsers();
     
+    // Check if new email already exists
     if (email && email !== user.email) {
-      // Check if new email already exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-      });
-      
-      if (existingUser && existingUser.id !== user.id) {
-        return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
+      const existingUser = users.find(u => u.email === email && u.id !== user.id);
+      if (existingUser) {
+        return NextResponse.json({ error: 'Email is al in gebruik' }, { status: 400 });
       }
-      
-      updateData.email = email;
-    }
-    
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10);
     }
 
     // Update user
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
+    const updatedUsers = users.map(u => {
+      if (u.id === user.id) {
+        return {
+          ...u,
+          ...(email && { email }),
+          ...(password && { password: bcrypt.hashSync(password, 10) }),
+        };
+      }
+      return u;
     });
 
+    // Save to file
+    const usersFile = path.join(process.cwd(), 'data', 'users.json');
+    await fs.writeFile(usersFile, JSON.stringify(updatedUsers, null, 2));
+
+    const updatedUser = updatedUsers.find(u => u.id === user.id)!;
+
     return NextResponse.json({
-      message: 'Credentials updated successfully',
-      user: updatedUser,
+      message: 'Gegevens succesvol bijgewerkt',
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role,
+      },
     });
   } catch (error) {
     console.error('Error updating credentials:', error);

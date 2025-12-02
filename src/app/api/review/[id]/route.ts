@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auditActions } from '@/lib/audit';
+import { getUpload, getUploadData, updateUpload, updateUploadData, getSettings } from '@/lib/storage';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -16,17 +15,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const upload = await prisma.upload.findUnique({
-      where: { id },
-      include: { user: true },
-    });
+    const upload = await getUpload(id);
 
     if (!upload) {
       return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
     }
 
-    // Parse the stored CSV data (this should be the original uploaded data)
-    const csvData = upload.reviewedData ? JSON.parse(upload.reviewedData) : [];
+    const data = await getUploadData(id);
 
     return NextResponse.json({
       upload: {
@@ -36,7 +31,7 @@ export async function GET(
         uploadedAt: upload.uploadedAt,
         comments: upload.comments,
       },
-      data: csvData,
+      data: data || [],
     });
   } catch (error) {
     console.error('Failed to fetch upload:', error);
@@ -53,46 +48,33 @@ export async function POST(
     const body = await request.json();
     const { comments, reviewedData } = body;
 
-    // Get client information for audit logging
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
-
     // Update the upload with review results
-    const upload = await prisma.upload.update({
-      where: { id },
-      data: {
-        status: 'reviewed',
-        reviewedAt: new Date(),
-        comments: comments,
-        reviewedData: JSON.stringify(reviewedData),
-      },
-      include: {
-        user: true,
-      },
+    const upload = await updateUpload(id, {
+      status: 'reviewed',
+      reviewedAt: new Date().toISOString(),
+      comments: comments,
     });
 
-    // Log the review action using the uploader's user ID
-    if (upload.userId) {
-      await auditActions.uploadReviewed(upload.userId, upload.id, comments, ipAddress, userAgent);
+    if (!upload) {
+      return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
     }
 
-    // Send email notification to uploader using settings from database
+    // Save reviewed data
+    await updateUploadData(id, reviewedData);
+
+    // Send email notification to uploader
     try {
-      const settings = await prisma.settings.findFirst();
-      const uploaderEmail = settings?.uploaderEmail || upload.user?.email || 'uploader@company.com';
+      const settings = await getSettings();
+      const uploaderEmail = settings.uploaderEmail;
 
-      // Count issues
       const issuesCount = reviewedData.filter((row: ReviewedRow) => row._status === 'issue').length;
-
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://portal-cvs.vercel.app';
       const downloadUrl = `${appUrl}/download/${upload.id}`;
       
       await resend.emails.send({
-        from: process.env.FROM_EMAIL || 'noreply@company.com',
+        from: process.env.FROM_EMAIL || 'info@akwebsolutions.nl',
         to: uploaderEmail,
-        subject: `✅ CSV Review Voltooid - ${upload.filename}`,
+        subject: `Review Voltooid - ${upload.filename}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -106,14 +88,15 @@ export async function POST(
                 <td style="padding: 40px 20px;">
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     
-                    <!-- Logo -->
+                    <!-- Logo & Header -->
                     <tr>
-                      <td style="background-color: #ffffff; padding: 30px 30px 20px; text-align: center; border-radius: 8px 8px 0 0;">
-                        <img src="${appUrl}/elmar-logo.png" alt="Elmar Services" style="max-width: 220px; height: auto; display: block; margin: 0 auto;">
+                      <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                        <img src="https://elmarservices.com/wp-content/uploads/2024/12/LOGO-ELMAR-766x226-1-400x118.png" alt="Elmar Services" style="max-width: 200px; margin-bottom: 15px;">
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Review Voltooid</h1>
                       </td>
                     </tr>
                     
-                    <!-- Header -->
+                    <!-- Content -->
                     <tr>
                       <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">✅ Review Voltooid</h1>
@@ -186,7 +169,7 @@ export async function POST(
                           <tr>
                             <td style="padding: 15px 20px;">
                               <p style="margin: 0; color: #721c24; font-size: 13px; line-height: 1.5;">
-                                <strong>⚠️ Belangrijk:</strong> Het bestand wordt automatisch verwijderd zodra je het hebt gedownload. Download het bestand binnen 24 uur.
+                                <strong>⚠️ Belangrijk:</strong> Het bestand wordt automatisch verwijderd zodra je het hebt gedownload.
                               </p>
                             </td>
                           </tr>
@@ -220,14 +203,8 @@ export async function POST(
         `,
       });
 
-      // Log email sent
-      if (upload.userId) {
-        await auditActions.emailSent(upload.userId, upload.id, uploaderEmail, ipAddress, userAgent);
-      }
-
     } catch (emailError) {
       console.error('Failed to send completion email:', emailError);
-      // Don't fail the review if email fails
     }
 
     return NextResponse.json({

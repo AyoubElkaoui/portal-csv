@@ -1,0 +1,16 @@
+[
+  {
+    "id": "anissa-user",
+    "email": "anissa@elmarservices.com",
+    "password": "$2b$10$69IWnZG4jNTgUkPjEupxle8wrcQBa9UDO0Cqf963IPrLd6xxiF8UC",
+    "name": "Anissa",
+    "role": "uploader"
+  },
+  {
+    "id": "rachid-user",
+    "email": "rachid@elmarservices.com",
+    "password": "$2b$10$69IWnZG4jNTgUkPjEupxle8wrcQBa9UDO0Cqf963IPrLd6xxiF8UC",
+    "name": "Rachid",
+    "role": "reviewer"
+  }
+]

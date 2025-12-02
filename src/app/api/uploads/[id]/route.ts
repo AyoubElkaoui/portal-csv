@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auditActions } from '@/lib/audit';
+import { getUpload, getUploadData, deleteUpload } from '@/lib/storage';
 
 export async function GET(
   request: NextRequest,
@@ -8,11 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-
-    const upload = await prisma.upload.findUnique({
-      where: { id },
-      include: { user: true },
-    });
+    const upload = await getUpload(id);
 
     if (!upload) {
       return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
@@ -31,32 +26,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-
-    // Get client information for audit logging
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
-
-    // Get the upload to log the deletion
-    const upload = await prisma.upload.findUnique({
-      where: { id },
-      include: { user: true },
-    });
+    const upload = await getUpload(id);
 
     if (!upload) {
       return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
     }
 
-    // Log the deletion action BEFORE deleting the upload
-    if (upload.userId) {
-      await auditActions.uploadDeleted(upload.userId, id, upload.filename, ipAddress, userAgent);
-    }
-
-    // Delete the upload
-    await prisma.upload.delete({
-      where: { id },
-    });
+    await deleteUpload(id);
 
     return NextResponse.json({ success: true, message: 'Upload deleted successfully' });
   } catch (error) {

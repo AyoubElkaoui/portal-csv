@@ -1,23 +1,7 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AuthOptions } from 'next-auth';
-
-// Simple in-memory allowed users. Prefer setting via environment variables in production.
-const USERS = [
-  {
-    id: 'anissa',
-    name: 'Anissa',
-    email: process.env.ANISSA_EMAIL || 'anissa@example.com',
-    password: process.env.ANISSA_PASSWORD || 'anissa-password',
-    role: 'uploader',
-  },
-  {
-    id: 'reviewer',
-    name: 'Reviewer',
-    email: process.env.REVIEWER_EMAIL || 'reviewer@example.com',
-    password: process.env.REVIEWER_PASSWORD || 'reviewer-password',
-    role: 'reviewer',
-  },
-];
+import bcrypt from 'bcryptjs';
+import { getUserByEmail } from './storage';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -29,12 +13,19 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials) return null;
-        const user = USERS.find(u => u.email === credentials.email && u.password === credentials.password);
-        if (user) {
-          // Return the user object (will be included in the session)
-          return { id: user.id, name: user.name, email: user.email, role: user.role } as any;
-        }
-        return null;
+        
+        const user = await getUserByEmail(credentials.email);
+        if (!user) return null;
+
+        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+        if (!isValidPassword) return null;
+
+        return { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role 
+        } as any;
       },
     }),
   ],

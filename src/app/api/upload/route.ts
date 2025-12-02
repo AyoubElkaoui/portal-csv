@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auditActions } from '@/lib/audit';
+import { createUpload, getSettings } from '@/lib/storage';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Configuratie voor Vercel - maximale body size voor file uploads
-export const maxDuration = 60; // seconds
+export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    // Ontvang geparsede data van client (niet het hele bestand!)
     const body = await request.json();
-    const { filename, fileType, data } = body;
+    const { filename, fileType, data, userId = 'anissa-user' } = body;
 
     if (!filename || !data || !Array.isArray(data)) {
       return NextResponse.json({ error: 'Ongeldige data' }, { status: 400 });
@@ -23,100 +20,129 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Bestand bevat geen data' }, { status: 400 });
     }
 
-    // Get client information for audit logging
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
-
     // Process the data to add titel column if needed
     const processedData = data.map((row: Record<string, unknown>) => {
       const processedRow = { ...row };
-
-      // Add titel column after relatie if it doesn't exist
       if (row['relatie'] && !row['titel']) {
         processedRow['titel'] = '';
       }
-
       return processedRow;
     });
 
-    // Create default uploader user if not exists
-    const uploaderId = 'default-uploader';
-    await prisma.user.upsert({
-      where: { id: uploaderId },
-      update: {},
-      create: {
-        id: uploaderId,
-        email: 'elkaoui.a@gmail.com',
-        name: 'Default Uploader',
-        role: 'uploader',
-      },
+    // Create upload
+    const upload = await createUpload({
+      userId,
+      filename,
+      fileData: processedData
     });
 
-    // Create upload record - simplified, no sheetNames for now
-    const upload = await prisma.upload.create({
-      data: {
-        userId: uploaderId,
-        filename: filename,
-        status: 'uploaded',
-        reviewedData: JSON.stringify(processedData),
-      },
-    });
-
-    // Log the upload action
-    await auditActions.uploadCreated(uploaderId, upload.id, filename, ipAddress, userAgent);
-
-    // Send emails using settings from database
+    // Send emails
     try {
-      // Get email addresses from settings
-      const settings = await prisma.settings.findFirst();
-      const reviewerEmail = settings?.reviewerEmail || 'info@akwebsolutions.nl';
-      const uploaderEmail = settings?.uploaderEmail || 'elkaoui.a@gmail.com';
+      const settings = await getSettings();
+      const reviewerEmail = settings.reviewerEmail;
+      const uploaderEmail = settings.uploaderEmail;
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://portal-cvs.vercel.app';
 
       // Email to reviewer
       await resend.emails.send({
-        from: process.env.FROM_EMAIL || 'noreply@company.com',
+        from: process.env.FROM_EMAIL || 'info@akwebsolutions.nl',
         to: reviewerEmail,
-        subject: `Nieuwe ${fileType || 'CSV'} upload klaar voor review: ${filename}`,
+        subject: `Nieuwe upload klaar voor review: ${filename}`,
         html: `
-          <h2>Nieuwe ${fileType || 'CSV'} upload beschikbaar</h2>
-          <p>Er is een nieuwe ${fileType || 'CSV'} upload beschikbaar voor review:</p>
-          <ul>
-            <li><strong>Bestand:</strong> ${filename}</li>
-            <li><strong>Type:</strong> ${(fileType || 'CSV').toUpperCase()}</li>
-            <li><strong>Aantal rijen:</strong> ${processedData.length}</li>
-            <li><strong>Uploader:</strong> ${uploaderEmail}</li>
-            <li><strong>Upload tijd:</strong> ${new Date().toLocaleString('nl-NL')}</li>
-          </ul>
-          <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/review/${upload.id}">Klik hier om te reviewen</a></p>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; background: #fff; }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }
+              .logo { max-width: 200px; margin-bottom: 20px; }
+              .content { padding: 30px; }
+              .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
+              .button { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+              .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <img src="https://elmarservices.com/wp-content/uploads/2024/12/LOGO-ELMAR-766x226-1-400x118.png" alt="Elmar Services" class="logo">
+                <h1 style="color: white; margin: 0;">Nieuwe Upload</h1>
+              </div>
+              <div class="content">
+                <p>Hallo,</p>
+                <p>Er is een nieuwe upload beschikbaar voor review:</p>
+                <div class="info-box">
+                  <p><strong>Bestand:</strong> ${filename}</p>
+                  <p><strong>Type:</strong> ${(fileType || 'CSV').toUpperCase()}</p>
+                  <p><strong>Aantal rijen:</strong> ${processedData.length}</p>
+                  <p><strong>Uploader:</strong> ${uploaderEmail}</p>
+                  <p><strong>Upload tijd:</strong> ${new Date().toLocaleString('nl-NL')}</p>
+                </div>
+                <a href="${appUrl}/review/${upload.id}" class="button">Start Review</a>
+              </div>
+              <div class=\"footer\">
+                <p>&copy; ${new Date().getFullYear()} Elmar Services | CSV Portal</p>
+                <p><a href=\"${appUrl}\" style=\"color: #667eea;\">Portal openen</a></p>
+              </div>
+            </div>
+          </body>
+          </html>
         `,
       });
 
       // Confirmation email to uploader
       await resend.emails.send({
-        from: process.env.FROM_EMAIL || 'noreply@company.com',
+        from: process.env.FROM_EMAIL || 'info@akwebsolutions.nl',
         to: uploaderEmail,
-        subject: `${(fileType || 'CSV').toUpperCase()} upload bevestiging: ${filename}`,
+        subject: `Upload bevestiging: ${filename}`,
         html: `
-          <h2>${(fileType || 'CSV').toUpperCase()} Upload Bevestiging</h2>
-          <p>Je ${(fileType || 'CSV').toUpperCase()} bestand is succesvol geüpload:</p>
-          <ul>
-            <li><strong>Bestand:</strong> ${filename}</li>
-            <li><strong>Type:</strong> ${(fileType || 'CSV').toUpperCase()}</li>
-            <li><strong>Aantal rijen:</strong> ${processedData.length}</li>
-            <li><strong>Status:</strong> Wachtend op review</li>
-          </ul>
-          <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard">Bekijk je uploads</a></p>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; background: #fff; }
+              .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; }
+              .logo { max-width: 200px; margin-bottom: 20px; }
+              .content { padding: 30px; }
+              .info-box { background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
+              .button { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+              .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <img src="https://elmarservices.com/wp-content/uploads/2024/12/LOGO-ELMAR-766x226-1-400x118.png" alt="Elmar Services" class="logo">
+                <h1 style="color: white; margin: 0;">Upload Succesvol</h1>
+              </div>
+              <div class="content">
+                <p>Beste gebruiker,</p>
+                <p>Je bestand is succesvol geüpload en wordt binnenkort gereviewed:</p>
+                <div class="info-box">
+                  <p><strong>Bestand:</strong> ${filename}</p>
+                  <p><strong>Type:</strong> ${(fileType || 'CSV').toUpperCase()}</p>
+                  <p><strong>Aantal rijen:</strong> ${processedData.length}</p>
+                  <p><strong>Status:</strong> Wachtend op review</p>
+                </div>
+                <p>Je ontvangt een nieuwe email zodra de review voltooid is.</p>
+                <a href="${appUrl}/dashboard" class="button">Bekijk Dashboard</a>
+              </div>
+              <div class=\"footer\">
+                <p>&copy; ${new Date().getFullYear()} Elmar Services | CSV Portal</p>
+                <p><a href=\"${appUrl}\" style=\"color: #10b981;\">Portal openen</a></p>
+              </div>
+            </div>
+          </body>
+          </html>
         `,
       });
-
-      await auditActions.emailSent(uploaderId, upload.id, reviewerEmail, ipAddress, userAgent);
-      await auditActions.emailSent(uploaderId, upload.id, uploaderEmail, ipAddress, userAgent);
-
     } catch (emailError) {
       console.error('Email error:', emailError);
-      // Don't fail upload if email fails
     }
 
     return NextResponse.json({
