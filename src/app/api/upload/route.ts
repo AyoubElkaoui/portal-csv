@@ -7,14 +7,9 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verhoog body size limit naar 50MB voor grote CSV files
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-};
+// Configuratie voor Vercel - maximale body size voor file uploads
+export const maxDuration = 60; // seconds
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
