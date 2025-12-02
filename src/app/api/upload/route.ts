@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
 import { prisma } from '@/lib/prisma';
 import { auditActions } from '@/lib/audit';
 import { Resend } from 'resend';
@@ -13,11 +11,16 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    // Ontvang geparsede data van client (niet het hele bestand!)
+    const body = await request.json();
+    const { filename, fileType, data } = body;
 
-    if (!file) {
-      return NextResponse.json({ error: 'Geen bestand geüpload' }, { status: 400 });
+    if (!filename || !data || !Array.isArray(data)) {
+      return NextResponse.json({ error: 'Ongeldige data' }, { status: 400 });
+    }
+
+    if (data.length === 0) {
+      return NextResponse.json({ error: 'Bestand bevat geen data' }, { status: 400 });
     }
 
     // Get client information for audit logging
@@ -26,79 +29,8 @@ export async function POST(request: NextRequest) {
                      'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
-    let parsedData: Record<string, unknown>[] = [];
-    let fileType = 'csv';
-
-    // Detect file type and parse accordingly
-    if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
-      fileType = 'excel';
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { 
-          type: 'array',
-          cellDates: true  // Convert Excel dates to JavaScript Date objects
-        });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-          header: 1,
-          raw: false  // Ensure numbers are parsed properly
-        }) as unknown[][];
-
-        if (jsonData.length === 0) {
-          return NextResponse.json({ error: 'Excel bestand is leeg' }, { status: 400 });
-        }
-
-        // Convert to object format with first row as headers
-        const headers = jsonData[0] as string[];
-        parsedData = jsonData.slice(1).map((row) => {
-          const obj: Record<string, unknown> = {};
-          headers.forEach((header, index) => {
-            const value = row[index];
-            // Convert Date objects to ISO strings for JSON storage
-            if (value instanceof Date) {
-              obj[header] = value.toISOString().split('T')[0]; // YYYY-MM-DD format
-            } else {
-              obj[header] = value || '';
-            }
-          });
-          return obj;
-        });
-      } catch (error) {
-        console.error('Excel parsing error:', error);
-        return NextResponse.json({ error: 'Excel bestand kon niet worden gelezen' }, { status: 400 });
-      }
-    } else {
-      // Handle CSV files
-      try {
-        const fileContent = await file.text();
-        const parsed = Papa.parse(fileContent, {
-          header: true,
-          delimiter: ',',
-          skipEmptyLines: true,
-          dynamicTyping: true
-        });
-
-        if (parsed.errors.length > 0) {
-          console.error('CSV parsing errors:', parsed.errors);
-          return NextResponse.json({
-            error: 'CSV parsing mislukt: ' + parsed.errors.map(e => e.message).join(', ')
-          }, { status: 400 });
-        }
-
-        parsedData = parsed.data as Record<string, unknown>[];
-      } catch (error) {
-        console.error('CSV parsing error:', error);
-        return NextResponse.json({ error: 'CSV bestand kon niet worden gelezen' }, { status: 400 });
-      }
-    }
-
-    if (parsedData.length === 0) {
-      return NextResponse.json({ error: 'Bestand bevat geen data' }, { status: 400 });
-    }
-
     // Process the data to add titel column if needed
-    const processedData = parsedData.map((row) => {
+    const processedData = data.map((row: Record<string, unknown>) => {
       const processedRow = { ...row };
 
       // Add titel column after relatie if it doesn't exist
@@ -126,14 +58,14 @@ export async function POST(request: NextRequest) {
     const upload = await prisma.upload.create({
       data: {
         userId: uploaderId,
-        filename: file.name,
+        filename: filename,
         status: 'uploaded',
         reviewedData: JSON.stringify(processedData),
       },
     });
 
     // Log the upload action
-    await auditActions.uploadCreated(uploaderId, upload.id, file.name, ipAddress, userAgent);
+    await auditActions.uploadCreated(uploaderId, upload.id, filename, ipAddress, userAgent);
 
     // Send emails using settings from database
     try {
@@ -146,13 +78,13 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: process.env.FROM_EMAIL || 'noreply@company.com',
         to: reviewerEmail,
-        subject: `Nieuwe ${fileType.toUpperCase()} upload klaar voor review: ${file.name}`,
+        subject: `Nieuwe ${fileType || 'CSV'} upload klaar voor review: ${filename}`,
         html: `
-          <h2>Nieuwe ${fileType.toUpperCase()} upload beschikbaar</h2>
-          <p>Er is een nieuwe ${fileType.toUpperCase()} upload beschikbaar voor review:</p>
+          <h2>Nieuwe ${fileType || 'CSV'} upload beschikbaar</h2>
+          <p>Er is een nieuwe ${fileType || 'CSV'} upload beschikbaar voor review:</p>
           <ul>
-            <li><strong>Bestand:</strong> ${file.name}</li>
-            <li><strong>Type:</strong> ${fileType.toUpperCase()}</li>
+            <li><strong>Bestand:</strong> ${filename}</li>
+            <li><strong>Type:</strong> ${(fileType || 'CSV').toUpperCase()}</li>
             <li><strong>Aantal rijen:</strong> ${processedData.length}</li>
             <li><strong>Uploader:</strong> ${uploaderEmail}</li>
             <li><strong>Upload tijd:</strong> ${new Date().toLocaleString('nl-NL')}</li>
@@ -165,13 +97,13 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: process.env.FROM_EMAIL || 'noreply@company.com',
         to: uploaderEmail,
-        subject: `${fileType.toUpperCase()} upload bevestiging: ${file.name}`,
+        subject: `${(fileType || 'CSV').toUpperCase()} upload bevestiging: ${filename}`,
         html: `
-          <h2>${fileType.toUpperCase()} Upload Bevestiging</h2>
-          <p>Je ${fileType.toUpperCase()} bestand is succesvol geüpload:</p>
+          <h2>${(fileType || 'CSV').toUpperCase()} Upload Bevestiging</h2>
+          <p>Je ${(fileType || 'CSV').toUpperCase()} bestand is succesvol geüpload:</p>
           <ul>
-            <li><strong>Bestand:</strong> ${file.name}</li>
-            <li><strong>Type:</strong> ${fileType.toUpperCase()}</li>
+            <li><strong>Bestand:</strong> ${filename}</li>
+            <li><strong>Type:</strong> ${(fileType || 'CSV').toUpperCase()}</li>
             <li><strong>Aantal rijen:</strong> ${processedData.length}</li>
             <li><strong>Status:</strong> Wachtend op review</li>
           </ul>
@@ -190,8 +122,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       uploadId: upload.id,
-      message: `${fileType.toUpperCase()} bestand succesvol geüpload!`,
-      fileType: fileType,
+      message: `${(fileType || 'CSV').toUpperCase()} bestand succesvol geüpload!`,
+      fileType: fileType || 'csv',
       rowCount: processedData.length
     });
 

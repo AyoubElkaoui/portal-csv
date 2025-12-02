@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Upload, AlertTriangle } from 'lucide-react';
 import { LoadingSpinner } from '@/components/Skeleton';
 import { Navbar } from '@/components/Navbar';
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -45,16 +47,91 @@ export default function UploadPage() {
       setMessage('Je hebt al een bestand in behandeling. Download eerst je huidige bestand voordat je een nieuw bestand upload.');
       return;
     }
+    
     setUploading(true);
-    setMessage('');
-    const formData = new FormData();
-    formData.append('file', file);
+    setMessage('Bestand verwerken...');
+
     try {
+      let parsedData: Record<string, unknown>[] = [];
+      let fileType = 'csv';
+
+      // Parse bestand client-side
+      if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+        fileType = 'excel';
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { 
+          type: 'array',
+          cellDates: true
+        });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+          header: 1,
+          raw: false
+        }) as unknown[][];
+
+        if (jsonData.length === 0) {
+          setMessage('Excel bestand is leeg');
+          setUploading(false);
+          return;
+        }
+
+        // Convert to object format
+        const headers = jsonData[0] as string[];
+        parsedData = jsonData.slice(1).map((row) => {
+          const obj: Record<string, unknown> = {};
+          headers.forEach((header, index) => {
+            const value = row[index];
+            if (value instanceof Date) {
+              obj[header] = value.toISOString().split('T')[0];
+            } else {
+              obj[header] = value || '';
+            }
+          });
+          return obj;
+        });
+      } else {
+        // CSV parsing
+        const fileContent = await file.text();
+        const parsed = Papa.parse(fileContent, {
+          header: true,
+          delimiter: ',',
+          skipEmptyLines: true,
+          dynamicTyping: true
+        });
+
+        if (parsed.errors.length > 0) {
+          setMessage('CSV parsing mislukt: ' + parsed.errors.map(e => e.message).join(', '));
+          setUploading(false);
+          return;
+        }
+
+        parsedData = parsed.data as Record<string, unknown>[];
+      }
+
+      if (parsedData.length === 0) {
+        setMessage('Bestand bevat geen data');
+        setUploading(false);
+        return;
+      }
+
+      setMessage('Data uploaden naar server...');
+
+      // Stuur alleen geparsede data naar API (niet het hele bestand!)
       const res = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          fileType: fileType,
+          data: parsedData
+        }),
       });
+
       const data = await res.json();
+      
       if (res.ok) {
         setMessage('Upload succesvol! Je wordt doorgestuurd naar het dashboard...');
         setFile(null);
@@ -64,9 +141,11 @@ export default function UploadPage() {
       } else {
         setMessage('Upload mislukt: ' + data.error);
       }
-    } catch {
-      setMessage('Er is een fout opgetreden.');
+    } catch (error) {
+      console.error('Upload error:', error);
+      setMessage('Er is een fout opgetreden bij het verwerken van het bestand.');
     }
+    
     setUploading(false);
   };
 
