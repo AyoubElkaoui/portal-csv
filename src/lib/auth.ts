@@ -21,7 +21,29 @@ export const authOptions: AuthOptions = {
             where: { email: credentials.email },
           });
 
-          if (!user || !user.password) {
+          if (!user) {
+            return null;
+          }
+
+          // Als user geen password heeft (zoals default-uploader), check environment variables
+          if (!user.password) {
+            // Fallback voor users zonder wachtwoord in database
+            const envEmail = process.env.ANISSA_EMAIL || 'anissa@example.com';
+            const envPassword = process.env.ANISSA_PASSWORD || 'anissa123';
+            const reviewerEmail = process.env.REVIEWER_EMAIL || 'reviewer@example.com';
+            const reviewerPassword = process.env.REVIEWER_PASSWORD || 'reviewer123';
+
+            if (
+              (credentials.email === envEmail && credentials.password === envPassword) ||
+              (credentials.email === reviewerEmail && credentials.password === reviewerPassword)
+            ) {
+              return {
+                id: user.id,
+                name: user.name || user.email,
+                email: user.email,
+                role: user.role,
+              };
+            }
             return null;
           }
 
