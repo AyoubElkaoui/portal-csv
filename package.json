@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@libsql/client": "^0.15.15",
+    "@prisma/adapter-libsql": "^7.0.1",
     "@prisma/client": "^6.19.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/formidable": "^3.4.6",
