@@ -89,11 +89,11 @@ export default function Dashboard() {
     ? uploads.filter(upload => upload.status === 'reviewed')
     : uploads; // Reviewer sees all uploads from API (already filtered to 'uploaded')
 
-  // Limit to only one upload at a time
-  const displayUploads = filteredUploads.slice(0, 1);
+  // Show all uploads (max 5)
+  const displayUploads = filteredUploads;
 
-  // Check if user can upload (only if no pending or reviewed uploads)
-  const canUpload = isUploader && uploads.length === 0;
+  // Check if user can upload (max 5 uploads at a time)
+  const canUpload = isUploader && uploads.length < 5;
 
   const addToast = (type: 'success' | 'error', message: string) => {
     const id = Date.now().toString();
@@ -204,14 +204,14 @@ export default function Dashboard() {
           </h2>
           <p className="text-blue-800 dark:text-blue-200 mb-4">
             {isReviewer 
-              ? 'Als reviewer kun je één bestand tegelijk reviewen. Zodra je het bestand hebt gereviewed, verdwijnt het van jouw dashboard en verschijnt het bij de uploader voor download.'
-              : 'Je kunt één bestand tegelijk uploaden. Na upload wordt het bestand automatisch naar de reviewer gestuurd. Zodra de review klaar is, ontvang je een email en kun je het bestand hier downloaden. Na het downloaden wordt het automatisch verwijderd.'
+              ? 'Als reviewer kun je alle bestanden reviewen. Zodra je een bestand hebt gereviewed, verdwijnt het van jouw dashboard en verschijnt het bij de uploader voor download.'
+              : 'Je kunt maximaal 5 bestanden tegelijk uploaden. Na upload wordt elk bestand automatisch naar de reviewer gestuurd. Zodra de review klaar is, ontvang je een email en kun je het bestand hier downloaden. Na het downloaden wordt het automatisch verwijderd.'
             }
           </p>
           {isUploader && !canUpload && (
             <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md p-3 mt-3">
               <p className="text-yellow-800 dark:text-yellow-200 text-sm">
-                ⚠️ Je hebt al een bestand in behandeling. Je kunt pas een nieuw bestand uploaden nadat je het huidige bestand hebt gedownload.
+                ⚠️ Je hebt het maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand kunt uploaden.
               </p>
             </div>
           )}
