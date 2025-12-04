@@ -97,24 +97,33 @@ export async function createUpload(data: {
   filename: string;
   fileData: any;
 }): Promise<Upload> {
-  const upload = await prisma.upload.create({
-    data: {
-      userId: data.userId,
-      filename: data.filename,
-      fileData: JSON.stringify(data.fileData),
-      status: 'uploaded',
-    },
-  });
+  try {
+    console.log('[DB] Creating upload:', { userId: data.userId, filename: data.filename });
+    
+    const upload = await prisma.upload.create({
+      data: {
+        userId: data.userId,
+        filename: data.filename,
+        fileData: JSON.stringify(data.fileData),
+        status: 'uploaded',
+      },
+    });
 
-  return {
-    id: upload.id,
-    userId: upload.userId,
-    filename: upload.filename,
-    status: upload.status as 'uploaded' | 'reviewed' | 'processed',
-    uploadedAt: upload.uploadedAt.toISOString(),
-    reviewedAt: upload.reviewedAt?.toISOString(),
-    comments: upload.comments || undefined,
-  };
+    console.log('[DB] Upload created successfully:', upload.id);
+
+    return {
+      id: upload.id,
+      userId: upload.userId,
+      filename: upload.filename,
+      status: upload.status as 'uploaded' | 'reviewed' | 'processed',
+      uploadedAt: upload.uploadedAt.toISOString(),
+      reviewedAt: upload.reviewedAt?.toISOString(),
+      comments: upload.comments || undefined,
+    };
+  } catch (error) {
+    console.error('[DB] Error creating upload:', error);
+    throw error;
+  }
 }
 
 export async function getUpload(id: string): Promise<Upload | null> {

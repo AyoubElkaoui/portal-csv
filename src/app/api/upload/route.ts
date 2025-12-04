@@ -9,14 +9,20 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[API] Upload request started');
+    
     const body = await request.json();
     const { filename, fileType, data, userId = 'anissa-user' } = body;
 
+    console.log('[API] Request data:', { filename, fileType, dataLength: data?.length, userId });
+
     if (!filename || !data || !Array.isArray(data)) {
+      console.error('[API] Invalid data:', { filename: !!filename, data: !!data, isArray: Array.isArray(data) });
       return NextResponse.json({ error: 'Ongeldige data' }, { status: 400 });
     }
 
     if (data.length === 0) {
+      console.error('[API] Empty data');
       return NextResponse.json({ error: 'Bestand bevat geen data' }, { status: 400 });
     }
 
@@ -29,12 +35,16 @@ export async function POST(request: NextRequest) {
       return processedRow;
     });
 
+    console.log('[API] Creating upload in database...');
+    
     // Create upload
     const upload = await createUpload({
       userId,
       filename,
       fileData: processedData
     });
+    
+    console.log('[API] Upload created:', upload.id);
 
     // Send emails
     try {
@@ -141,9 +151,13 @@ export async function POST(request: NextRequest) {
           </html>
         `,
       });
+      
+      console.log('[API] Emails sent successfully');
     } catch (emailError) {
-      console.error('Email error:', emailError);
+      console.error('[API] Email error:', emailError);
     }
+
+    console.log('[API] Upload completed successfully');
 
     return NextResponse.json({
       success: true,
@@ -154,7 +168,13 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('[API] Upload error:', error);
+    console.error('[API] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+    
     return NextResponse.json({
       error: 'Er is een fout opgetreden bij het uploaden'
     }, { status: 500 });
