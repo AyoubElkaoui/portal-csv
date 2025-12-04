@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createUpload, getSettings } from '@/lib/storage';
+import { createUpload, getSettings, getUserByEmail } from '@/lib/storage';
 import { Resend } from 'resend';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -11,10 +13,28 @@ export async function POST(request: NextRequest) {
   try {
     console.log('[API] Upload request started');
     
-    const body = await request.json();
-    const { filename, fileType, data, userId = 'anissa-user' } = body;
+    // Get session to get real user ID
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      console.error('[API] No session found');
+      return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 });
+    }
 
-    console.log('[API] Request data:', { filename, fileType, dataLength: data?.length, userId });
+    // Get user from database to get real ID
+    const user = await getUserByEmail(session.user.email);
+    
+    if (!user) {
+      console.error('[API] User not found in database');
+      return NextResponse.json({ error: 'Gebruiker niet gevonden' }, { status: 404 });
+    }
+
+    console.log('[API] User found:', { id: user.id, email: user.email });
+    
+    const body = await request.json();
+    const { filename, fileType, data } = body;
+
+    console.log('[API] Request data:', { filename, fileType, dataLength: data?.length, userId: user.id });
 
     if (!filename || !data || !Array.isArray(data)) {
       console.error('[API] Invalid data:', { filename: !!filename, data: !!data, isArray: Array.isArray(data) });
@@ -37,9 +57,9 @@ export async function POST(request: NextRequest) {
 
     console.log('[API] Creating upload in database...');
     
-    // Create upload
+    // Create upload with real user ID
     const upload = await createUpload({
-      userId,
+      userId: user.id,
       filename,
       fileData: processedData
     });
