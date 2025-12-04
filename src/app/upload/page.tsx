@@ -10,11 +10,12 @@ import Papa from 'papaparse';
 
 export default function UploadPage() {
   const router = useRouter();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
   const [canUpload, setCanUpload] = useState(true);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     // Check if user has any pending uploads
@@ -39,8 +40,8 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      setMessage('Selecteer een bestand.');
+    if (files.length === 0) {
+      setMessage('Selecteer minimaal één bestand.');
       return;
     }
     if (!canUpload) {
@@ -49,14 +50,23 @@ export default function UploadPage() {
     }
     
     setUploading(true);
-    setMessage('Bestand verwerken...');
+    setMessage('Bestanden verwerken...');
+    setUploadProgress({});
 
     try {
-      let parsedData: Record<string, unknown>[] = [];
-      let fileType = 'csv';
+      let successCount = 0;
+      let failCount = 0;
 
-      // Parse bestand client-side
-      if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+      // Process each file sequentially
+      for (const file of files) {
+        try {
+          setUploadProgress(prev => ({ ...prev, [file.name]: 'Verwerken...' }));
+
+          let parsedData: Record<string, unknown>[] = [];
+          let fileType = 'csv';
+
+          // Parse bestand client-side
+          if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
         fileType = 'excel';
         const arrayBuffer = await file.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { 
@@ -71,9 +81,9 @@ export default function UploadPage() {
         }) as unknown[][];
 
         if (jsonData.length === 0) {
-          setMessage('Excel bestand is leeg');
-          setUploading(false);
-          return;
+          setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Bestand is leeg' }));
+          failCount++;
+          continue;
         }
 
         // Convert to object format
@@ -101,21 +111,21 @@ export default function UploadPage() {
         });
 
         if (parsed.errors.length > 0) {
-          setMessage('CSV parsing mislukt: ' + parsed.errors.map(e => e.message).join(', '));
-          setUploading(false);
-          return;
+          setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Parsing fout' }));
+          failCount++;
+          continue;
         }
 
         parsedData = parsed.data as Record<string, unknown>[];
       }
 
       if (parsedData.length === 0) {
-        setMessage('Bestand bevat geen data');
-        setUploading(false);
-        return;
+        setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Geen data' }));
+        failCount++;
+        continue;
       }
 
-      setMessage('Data uploaden naar server...');
+      setUploadProgress(prev => ({ ...prev, [file.name]: 'Uploaden...' }));
 
       // Stuur alleen geparsede data naar API (niet het hele bestand!)
       const res = await fetch('/api/upload', {
@@ -133,17 +143,46 @@ export default function UploadPage() {
       const data = await res.json();
       
       if (res.ok) {
-        setMessage('Upload succesvol! Je wordt doorgestuurd naar het dashboard...');
-        setFile(null);
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
+        setUploadProgress(prev => ({ ...prev, [file.name]: '✓ Succesvol' }));
+        successCount++;
       } else {
-        setMessage('Upload mislukt: ' + data.error);
+        setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Mislukt: ' + data.error }));
+        failCount++;
       }
     } catch (error) {
       console.error('Upload error:', error);
-      setMessage('Er is een fout opgetreden bij het verwerken van het bestand.');
+      setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Fout bij verwerken' }));
+      failCount++;
+    }
+  }
+
+  // Show final message
+  if (successCount > 0 && failCount === 0) {
+    setMessage(`Alle ${successCount} bestand(en) succesvol geüpload! Je wordt doorgestuurd...`);
+    setFiles([]);
+    setTimeout(() => {
+      router.push('/dashboard');
+    }, 2000);
+  } else if (successCount > 0 && failCount > 0) {
+    setMessage(`${successCount} bestand(en) succesvol, ${failCount} mislukt. Bekijk de details hieronder.`);
+  } else {
+    setMessage('Alle uploads zijn mislukt. Probeer het opnieuw.');\n  }
+
+      // Show final message
+      if (successCount > 0 && failCount === 0) {
+        setMessage(`Alle ${successCount} bestand(en) succesvol geüpload! Je wordt doorgestuurd...`);
+        setFiles([]);
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 2000);
+      } else if (successCount > 0 && failCount > 0) {
+        setMessage(`${successCount} bestand(en) succesvol, ${failCount} mislukt. Bekijk de details hieronder.`);
+      } else {
+        setMessage('Alle uploads zijn mislukt. Probeer het opnieuw.');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setMessage('Er is een fout opgetreden bij het verwerken van de bestanden.');
     }
     
     setUploading(false);
@@ -215,18 +254,31 @@ export default function UploadPage() {
               <input
                 type="file"
                 accept=".csv,.xlsx,.xls"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                multiple
+                onChange={(e) => setFiles(Array.from(e.target.files || []))}
                 disabled={!canUpload}
                 className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-3 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                CSV (.csv) of Excel (.xlsx, .xls)
+                Selecteer één of meerdere bestanden (max 5) - CSV (.csv) of Excel (.xlsx, .xls)
               </p>
+              {files.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {files.length} bestand(en) geselecteerd:
+                  </p>
+                  {files.map((f, i) => (
+                    <p key={i} className="text-xs text-gray-600 dark:text-gray-400 pl-2">
+                      • {f.name}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={!file || uploading || !canUpload}
+              disabled={files.length === 0 || uploading || !canUpload}
               className="w-full btn-primary py-3 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
@@ -237,10 +289,26 @@ export default function UploadPage() {
               ) : (
                 <>
                   <Upload className="mr-2" size={18} />
-                  Upload Bestand
+                  Upload {files.length > 0 ? `${files.length} Bestand${files.length > 1 ? 'en' : ''}` : 'Bestanden'}
                 </>
               )}
             </button>
+
+            {/* Upload Progress */}
+            {Object.keys(uploadProgress).length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Upload status:</p>
+                {Object.entries(uploadProgress).map(([filename, status]) => (
+                  <div key={filename} className="text-sm pl-2 flex items-start gap-2">
+                    <span className="text-gray-600 dark:text-gray-400">•</span>
+                    <span className="text-gray-800 dark:text-gray-200">{filename}:</span>
+                    <span className={status.includes('✓') ? 'text-green-600 dark:text-green-400' : status.includes('✗') ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>
+                      {status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </form>
 
           {message && (
