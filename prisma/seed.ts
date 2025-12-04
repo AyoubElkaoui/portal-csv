@@ -53,8 +53,8 @@ async function main() {
   });
 
   console.log('✅ Database seeded successfully');
-  console.log('📧 Uploader: anissa@elmarservices.nl / anissa123');
-  console.log('📧 Reviewer: reviewer@elmarservices.nl / anissa123');
+  console.log('📧 Uploader: anissa@elmarservices.com / Elmar@2025');
+  console.log('📧 Reviewer: brahim@elmarservices.com / Elmar@2025');
   console.log('💡 Wijzig deze credentials via Settings in de app!');
 }
 

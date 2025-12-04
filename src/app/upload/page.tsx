@@ -166,29 +166,15 @@ export default function UploadPage() {
   } else if (successCount > 0 && failCount > 0) {
     setMessage(`${successCount} bestand(en) succesvol, ${failCount} mislukt. Bekijk de details hieronder.`);
   } else {
-    setMessage('Alle uploads zijn mislukt. Probeer het opnieuw.');\n  }
-
-      // Show final message
-      if (successCount > 0 && failCount === 0) {
-        setMessage(`Alle ${successCount} bestand(en) succesvol geüpload! Je wordt doorgestuurd...`);
-        setFiles([]);
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
-      } else if (successCount > 0 && failCount > 0) {
-        setMessage(`${successCount} bestand(en) succesvol, ${failCount} mislukt. Bekijk de details hieronder.`);
-      } else {
-        setMessage('Alle uploads zijn mislukt. Probeer het opnieuw.');
-      }
+    setMessage('Alle uploads zijn mislukt. Probeer het opnieuw.');
+  }
     } catch (error) {
       console.error('Upload error:', error);
       setMessage('Er is een fout opgetreden bij het verwerken van de bestanden.');
     }
     
     setUploading(false);
-  };
-
-  if (checkingStatus) {
+  };  if (checkingStatus) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
