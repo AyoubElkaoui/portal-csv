@@ -24,8 +24,8 @@ export default function UploadPage() {
         if (res.ok) {
           const uploads = await res.json();
           // API already returns only user's own uploads
-          // User can't upload if they have ANY uploads (uploaded or reviewed status)
-          setCanUpload(uploads.length === 0);
+          // User can upload up to 5 files at a time
+          setCanUpload(uploads.length < 5);
         }
       } catch (error) {
         console.error('Error checking upload status:', error);
@@ -44,7 +44,7 @@ export default function UploadPage() {
       return;
     }
     if (!canUpload) {
-      setMessage('Je hebt al een bestand in behandeling. Download eerst je huidige bestand voordat je een nieuw bestand upload.');
+      setMessage('Je hebt het maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand upload.');
       return;
     }
     
@@ -179,8 +179,8 @@ export default function UploadPage() {
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               {canUpload 
-                ? 'Selecteer je CSV of Excel bestand om te uploaden'
-                : 'Je hebt al een bestand in behandeling'
+                ? 'Selecteer je CSV of Excel bestand om te uploaden (max 5 bestanden tegelijk)'
+                : 'Je hebt het maximum aantal bestanden (5) bereikt'
               }
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function UploadPage() {
                     Upload geblokkeerd
                   </h3>
                   <p className="text-yellow-800 dark:text-yellow-200 text-sm mb-2">
-                    Download eerst je huidige bestand voordat je een nieuw bestand kunt uploaden.
+                    Je hebt het maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand kunt uploaden.
                   </p>
                   <button
                     onClick={() => router.push('/dashboard')}

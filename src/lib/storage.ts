@@ -54,15 +54,15 @@ export async function getUsers(): Promise<User[]> {
       {
         id: 'anissa-user',
         email: 'anissa@elmarservices.com',
-        password: '$2b$10$69IWnZG4jNTgUkPjEupxle8wrcQBa9UDO0Cqf963IPrLd6xxiF8UC', // Elmar@2025!
+        password: '$2b$10$CvD2lAuCEJvfkpp4Fl1yuOjXz.XcvXPJ4uDgRDYMoHtIFIbbtzyEO', // Elmar@2025
         name: 'Anissa',
         role: 'uploader'
       },
       {
-        id: 'rachid-user',
-        email: 'rachid@elmarservices.com',
-        password: '$2b$10$69IWnZG4jNTgUkPjEupxle8wrcQBa9UDO0Cqf963IPrLd6xxiF8UC', // Elmar@2025!
-        name: 'Rachid',
+        id: 'brahim-user',
+        email: 'brahim@elmarservices.com',
+        password: '$2b$10$CvD2lAuCEJvfkpp4Fl1yuOjXz.XcvXPJ4uDgRDYMoHtIFIbbtzyEO', // Elmar@2025
+        name: 'Brahim',
         role: 'reviewer'
       }
     ];
@@ -82,7 +82,7 @@ export async function getSettings(): Promise<Settings> {
   if (process.env.VERCEL) {
     return {
       uploaderEmail: process.env.UPLOADER_EMAIL || 'anissa@elmarservices.com',
-      reviewerEmail: process.env.REVIEWER_EMAIL || 'info@akwebsolutions.nl'
+      reviewerEmail: process.env.REVIEWER_EMAIL || 'brahim@elmarservices.com'
     };
   }
 
@@ -93,7 +93,7 @@ export async function getSettings(): Promise<Settings> {
   } catch {
     const defaultSettings: Settings = {
       uploaderEmail: 'anissa@elmarservices.com',
-      reviewerEmail: 'info@akwebsolutions.nl'
+      reviewerEmail: 'brahim@elmarservices.com'
     };
     await fs.writeFile(SETTINGS_FILE, JSON.stringify(defaultSettings, null, 2));
     return defaultSettings;
