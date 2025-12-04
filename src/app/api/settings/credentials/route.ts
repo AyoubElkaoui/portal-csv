@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getUserByEmail, getUsers } from '@/lib/storage';
+import { getUserByEmail } from '@/lib/storage';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import fs from 'fs/promises';
-import path from 'path';
 
 // GET - Get current user info (not password)
 export async function GET() {
@@ -53,49 +52,41 @@ export async function POST(req: NextRequest) {
 
     // Verify current password if changing password
     if (password && currentPassword) {
-      const isValid = await bcrypt.compare(currentPassword, user.password);
+      const isValid = await bcrypt.compare(currentPassword, user.password || '');
       if (!isValid) {
         return NextResponse.json({ error: 'Huidig wachtwoord is onjuist' }, { status: 400 });
       }
     }
-
-    // Get all users
-    const users = await getUsers();
     
     // Check if new email already exists
     if (email && email !== user.email) {
-      const existingUser = users.find(u => u.email === email && u.id !== user.id);
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      });
       if (existingUser) {
         return NextResponse.json({ error: 'Email is al in gebruik' }, { status: 400 });
       }
     }
 
-    // Update user
-    const updatedUsers = users.map(u => {
-      if (u.id === user.id) {
-        return {
-          ...u,
-          ...(email && { email }),
-          ...(password && { password: bcrypt.hashSync(password, 10) }),
-        };
+    // Update user in database
+    const updateData: any = {};
+    if (email) updateData.email = email;
+    if (password) updateData.password = await bcrypt.hash(password, 10);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
       }
-      return u;
     });
-
-    // Save to file
-    const usersFile = path.join(process.cwd(), 'data', 'users.json');
-    await fs.writeFile(usersFile, JSON.stringify(updatedUsers, null, 2));
-
-    const updatedUser = updatedUsers.find(u => u.id === user.id)!;
 
     return NextResponse.json({
       message: 'Gegevens succesvol bijgewerkt',
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        role: updatedUser.role,
-      },
+      user: updatedUser,
     });
   } catch (error) {
     console.error('Error updating credentials:', error);

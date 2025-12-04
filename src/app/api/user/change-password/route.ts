@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getUserByEmail, getUsers } from '@/lib/storage';
+import { getUserByEmail } from '@/lib/storage';
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import fs from 'fs/promises';
-import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,16 +39,11 @@ export async function POST(request: NextRequest) {
     // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user in users.json
-    const users = await getUsers();
-    const updatedUsers = users.map(u => 
-      u.email === session.user.email 
-        ? { ...u, password: hashedPassword }
-        : u
-    );
-
-    const usersFile = path.join(process.cwd(), 'data', 'users.json');
-    await fs.writeFile(usersFile, JSON.stringify(updatedUsers, null, 2));
+    // Update user in database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    });
 
     return NextResponse.json({ 
       success: true, 
