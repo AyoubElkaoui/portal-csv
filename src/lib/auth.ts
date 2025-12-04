@@ -3,6 +3,24 @@ import type { AuthOptions } from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { getUserByEmail } from './storage';
 
+// Hardcoded users for Vercel (filesystem is read-only)
+const HARDCODED_USERS = [
+  {
+    id: 'anissa-user',
+    email: 'anissa@elmarservices.com',
+    password: '$2b$10$CvD2lAuCEJvfkpp4Fl1yuOjXz.XcvXPJ4uDgRDYMoHtIFIbbtzyEO', // Elmar@2025
+    name: 'Anissa',
+    role: 'uploader' as const
+  },
+  {
+    id: 'brahim-user',
+    email: 'brahim@elmarservices.com',
+    password: '$2b$10$CvD2lAuCEJvfkpp4Fl1yuOjXz.XcvXPJ4uDgRDYMoHtIFIbbtzyEO', // Elmar@2025
+    name: 'Brahim',
+    role: 'reviewer' as const
+  }
+];
+
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -20,7 +38,15 @@ export const authOptions: AuthOptions = {
         console.log('[AUTH] Attempting login for:', credentials.email);
 
         try {
-          const user = await getUserByEmail(credentials.email);
+          // On Vercel, use hardcoded users (filesystem is read-only)
+          let user;
+          if (process.env.VERCEL) {
+            console.log('[AUTH] Using hardcoded users (Vercel environment)');
+            user = HARDCODED_USERS.find(u => u.email.toLowerCase() === credentials.email.toLowerCase());
+          } else {
+            // Local development: use filesystem storage
+            user = await getUserByEmail(credentials.email);
+          }
 
           console.log('[AUTH] User found:', user ? 'yes' : 'no');
 

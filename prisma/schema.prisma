@@ -8,7 +8,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
@@ -27,10 +26,11 @@ model Upload {
   userId     String
   user       User       @relation(fields: [userId], references: [id])
   filename   String
+  fileData   String?    @db.Text // JSON string of file data
   status     String     @default("uploaded") // "uploaded", "reviewed", "processed"
   reviewedAt DateTime?
   comments   String?    // Reviewer's comments
-  reviewedData String?  // JSON string of reviewed invoice data
+  reviewedData String?  @db.Text // JSON string of reviewed invoice data
   uploadedAt DateTime   @default(now())
   auditLogs  AuditLog[]
 }

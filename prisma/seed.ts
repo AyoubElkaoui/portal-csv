@@ -4,19 +4,19 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create default users - wachtwoord: anissa123
-  const hashedPassword = await bcrypt.hash('anissa123', 10);
+  // Create default users - wachtwoord: Elmar@2025
+  const hashedPassword = await bcrypt.hash('Elmar@2025', 10);
 
   // Update or create users
   await prisma.user.upsert({
-    where: { email: 'anissa@elmarservices.nl' },
+    where: { email: 'anissa@elmarservices.com' },
     update: {
       password: hashedPassword, // Update password to ensure it's correct
       name: 'Anissa',
       role: 'uploader',
     },
     create: {
-      email: 'anissa@elmarservices.nl',
+      email: 'anissa@elmarservices.com',
       name: 'Anissa',
       role: 'uploader',
       password: hashedPassword,
@@ -24,15 +24,15 @@ async function main() {
   });
 
   await prisma.user.upsert({
-    where: { email: 'reviewer@elmarservices.nl' },
+    where: { email: 'brahim@elmarservices.com' },
     update: {
       password: hashedPassword, // Update password to ensure it's correct
-      name: 'Reviewer',
+      name: 'Brahim',
       role: 'reviewer',
     },
     create: {
-      email: 'reviewer@elmarservices.nl',
-      name: 'Reviewer',
+      email: 'brahim@elmarservices.com',
+      name: 'Brahim',
       role: 'reviewer',
       password: hashedPassword,
     },
@@ -41,11 +41,14 @@ async function main() {
   // Create default settings
   await prisma.settings.upsert({
     where: { id: 'default' },
-    update: {},
+    update: {
+      uploaderEmail: 'anissa@elmarservices.com',
+      reviewerEmail: 'brahim@elmarservices.com',
+    },
     create: {
       id: 'default',
-      uploaderEmail: 'anissa@elmarservices.nl',
-      reviewerEmail: 'reviewer@elmarservices.nl',
+      uploaderEmail: 'anissa@elmarservices.com',
+      reviewerEmail: 'brahim@elmarservices.com',
     },
   });
 
