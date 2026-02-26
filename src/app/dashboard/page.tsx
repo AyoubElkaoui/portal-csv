@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { FileText, Eye, Download, Trash2, Mail, AlertTriangle, X, CheckCircle, Maximize2, Upload } from 'lucide-react';
+import { FileText, Eye, Download, Trash2, Mail, AlertTriangle, X, CheckCircle, Maximize2, Upload, RefreshCw } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 
 type Upload = {
@@ -37,8 +37,11 @@ export default function Dashboard() {
   const [tableData, setTableData] = useState<Record<string, unknown>[]>([]);
   const [loadingTable, setLoadingTable] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  const fetchUploads = async () => {
+  const fetchUploads = useCallback(async (showSpinner = false) => {
+    if (showSpinner) setRefreshing(true);
     try {
       const res = await fetch('/api/uploads');
       if (!res.ok) {
@@ -46,10 +49,13 @@ export default function Dashboard() {
       }
       const data = await res.json();
       setUploads(data);
+      setLastRefresh(new Date());
     } catch (err) {
       console.error('Failed to fetch uploads:', err);
+    } finally {
+      if (showSpinner) setRefreshing(false);
     }
-  };
+  }, []);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -58,10 +64,12 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  // Fetch uploads on mount
+  // Fetch uploads on mount and auto-refresh every 30 seconds
   useEffect(() => {
     fetchUploads();
-  }, []);
+    const interval = setInterval(() => fetchUploads(), 30000);
+    return () => clearInterval(interval);
+  }, [fetchUploads]);
 
   // Show loading while checking auth
   if (status === 'loading') {
@@ -217,16 +225,33 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-slate-900 dark:text-white">
-            {isReviewer ? 'Review Dashboard' : 'Mijn Uploads'}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
-            {isReviewer 
-              ? 'Review de facturen en keur ze goed of markeer problemen'
-              : 'Beheer je factuur uploads en download gereviewde bestanden'
-            }
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2 text-slate-900 dark:text-white">
+              {isReviewer ? 'Review Dashboard' : 'Mijn Uploads'}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">
+              {isReviewer
+                ? 'Review de facturen en keur ze goed of markeer problemen'
+                : 'Beheer je factuur uploads en download gereviewde bestanden'
+              }
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {lastRefresh && (
+              <span className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
+                Bijgewerkt: {lastRefresh.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+            <button
+              onClick={() => fetchUploads(true)}
+              disabled={refreshing}
+              className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all disabled:opacity-50"
+              title="Vernieuwen"
+            >
+              <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
 
         {displayUploads.length === 0 ? (

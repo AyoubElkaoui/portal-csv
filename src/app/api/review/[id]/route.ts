@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUpload, getUploadData, updateUpload, updateUploadData, getSettings } from '@/lib/storage';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 interface ReviewedRow extends Record<string, unknown> {
   _status?: 'approved' | 'issue';
@@ -64,15 +66,19 @@ export async function POST(
 
     // Send email notification to uploader
     try {
+      if (!resend) {
+        console.log('Email not sent: RESEND_API_KEY not configured');
+      } else {
       const settings = await getSettings();
       const uploaderEmail = settings.uploaderEmail;
+      const fromEmail = process.env.FROM_EMAIL || 'info@akwebsolutions.nl';
 
       const issuesCount = reviewedData.filter((row: ReviewedRow) => row._status === 'issue').length;
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://portal-cvs.vercel.app';
       const downloadUrl = `${appUrl}/download/${upload.id}`;
-      
+
       await resend.emails.send({
-        from: process.env.FROM_EMAIL || 'info@akwebsolutions.nl',
+        from: fromEmail,
         to: uploaderEmail,
         subject: `Review Voltooid - ${upload.filename}`,
         html: `
@@ -203,6 +209,8 @@ export async function POST(
         `,
       });
 
+      console.log('[API] Review completion email sent');
+      }
     } catch (emailError) {
       console.error('Failed to send completion email:', emailError);
     }
