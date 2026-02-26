@@ -110,11 +110,11 @@ export async function POST(request: NextRequest) {
               <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
                 .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-                .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }
+                .header { background: #1a56db; padding: 30px; text-align: center; }
                 .logo { max-width: 200px; margin-bottom: 15px; }
                 .content { padding: 30px; }
-                .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
-                .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+                .info-box { background: #f8f9fa; border-left: 4px solid #1a56db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+                .button { display: inline-block; padding: 14px 32px; background: #1a56db; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600; font-size: 16px; }
                 .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #dee2e6; }
               </style>
             </head>
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
                   </div>
                   <div class="footer">
                     <p>&copy; ${new Date().getFullYear()} Elmar Services | CSV Portal</p>
-                    <p><a href="${appUrl}" style="color: #667eea;">Portal openen</a></p>
+                    <p><a href="${appUrl}" style="color: #1a56db;">Portal openen</a></p>
                   </div>
                 </div>
               </div>
@@ -164,11 +164,11 @@ export async function POST(request: NextRequest) {
               <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
                 .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-                .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; }
+                .header { background: #1a56db; padding: 30px; text-align: center; }
                 .logo { max-width: 200px; margin-bottom: 15px; }
                 .content { padding: 30px; }
-                .info-box { background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px; }
-                .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+                .info-box { background: #f8f9fa; border-left: 4px solid #1a56db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+                .button { display: inline-block; padding: 14px 32px; background: #1a56db; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600; font-size: 16px; }
                 .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #dee2e6; }
               </style>
             </head>
@@ -195,7 +195,7 @@ export async function POST(request: NextRequest) {
                   </div>
                   <div class="footer">
                     <p>&copy; ${new Date().getFullYear()} Elmar Services | CSV Portal</p>
-                    <p><a href="${appUrl}" style="color: #10b981;">Portal openen</a></p>
+                    <p><a href="${appUrl}" style="color: #1a56db;">Portal openen</a></p>
                   </div>
                 </div>
               </div>

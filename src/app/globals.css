@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
+  --background: #f8fafc;
   --foreground: #0f172a;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
+  --brand: #1a56db;
+  --brand-hover: #1648b8;
   --surface: #ffffff;
   --border: #e2e8f0;
   --muted: #64748b;
@@ -13,8 +13,8 @@
 .dark {
   --background: #0f172a;
   --foreground: #f1f5f9;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
+  --brand: #3b82f6;
+  --brand-hover: #60a5fa;
   --surface: #1e293b;
   --border: #334155;
   --muted: #94a3b8;
@@ -28,14 +28,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Design System - Cards */
+/* Cards */
 .card-modern {
   @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
 }
 
-/* Design System - Buttons */
+/* Buttons */
 .btn-primary {
-  @apply bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+  @apply bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
 }
 
 .btn-secondary {
@@ -50,7 +50,7 @@ body {
   @apply bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-lg transition-colors;
 }
 
-/* Design System - Status badges */
+/* Status badges */
 .status-badge {
   @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase;
 }
@@ -67,7 +67,7 @@ body {
   @apply bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-200 dark:border-blue-800;
 }
 
-/* Design System - Tables */
+/* Tables */
 .table-modern {
   @apply w-full text-sm;
 }
@@ -88,9 +88,9 @@ body {
   @apply bg-slate-50 dark:bg-slate-800/50;
 }
 
-/* Design System - Inputs */
+/* Inputs */
 .input-modern {
-  @apply w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all;
+  @apply w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all;
 }
 
 /* Animations */

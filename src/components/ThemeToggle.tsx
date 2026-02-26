@@ -13,45 +13,29 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    // Server-side rendering fallback - always show system theme initially
     return (
       <button
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
-        title="Thema: Systeem. Klik om te wisselen."
+        className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+        title="Thema wisselen"
       >
         <Monitor size={18} />
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Systeem
-        </span>
       </button>
     );
   }
 
   const getIcon = () => {
-    if (theme === 'system') {
-      return <Monitor size={18} />;
-    }
+    if (theme === 'system') return <Monitor size={18} />;
     return actualTheme === 'dark' ? <Moon size={18} /> : <Sun size={18} />;
-  };
-
-  const getLabel = () => {
-    if (theme === 'system') {
-      return 'Systeem';
-    }
-    return actualTheme === 'dark' ? 'Donker' : 'Licht';
   };
 
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors border border-gray-300 dark:border-gray-600"
-      title={`Thema: ${getLabel()}. Klik om te wisselen.`}
+      className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+      title={`Thema: ${theme === 'system' ? 'Systeem' : actualTheme === 'dark' ? 'Donker' : 'Licht'}`}
       suppressHydrationWarning
     >
       {getIcon()}
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-        {getLabel()}
-      </span>
     </button>
   );
 }

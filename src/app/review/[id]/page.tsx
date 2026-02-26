@@ -485,7 +485,7 @@ export default function ReviewPage() {
                   placeholder="Zoek in alle kolommen..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-slate-700"
                 />
               </div>
             </div>
@@ -493,7 +493,7 @@ export default function ReviewPage() {
             {/* Filter Toggle Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
             >
               <Filter size={18} />
               {showFilters ? 'Verberg Filters' : 'Toon Filters'}
@@ -505,7 +505,7 @@ export default function ReviewPage() {
               <select
                 value={rowsPerPage}
                 onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                className="px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500"
+                className="px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-slate-900 dark:text-white bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -528,7 +528,7 @@ export default function ReviewPage() {
                     placeholder="Filter op debiteurnummer..."
                     value={filterDebtor}
                     onChange={(e) => setFilterDebtor(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-slate-700"
                   />
                 </div>
 
@@ -540,7 +540,7 @@ export default function ReviewPage() {
                     placeholder="Filter op bedrijfsnaam..."
                     value={filterCompany}
                     onChange={(e) => setFilterCompany(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-slate-700"
                   />
                 </div>
 
@@ -552,7 +552,7 @@ export default function ReviewPage() {
                       onClick={() => setFilterRejected('all')}
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterRejected === 'all'
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
@@ -589,7 +589,7 @@ export default function ReviewPage() {
                       onClick={() => setFilterDaysOpen('all')}
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterDaysOpen === 'all'
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
@@ -674,7 +674,7 @@ export default function ReviewPage() {
                   </label>
                   <button
                     onClick={() => handleRowClick(absoluteIndex)}
-                    className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                   >
                     <MessageSquare size={16} />
                   </button>
@@ -689,14 +689,14 @@ export default function ReviewPage() {
                   </div>
                 ))}
                 {allColumns.length > 6 && (
-                  <div className="col-span-2 text-center text-indigo-600 dark:text-indigo-400 text-sm mt-2">
+                  <div className="col-span-2 text-center text-blue-600 dark:text-blue-400 text-sm mt-2">
                     + {allColumns.length - 6} meer kolommen - klik voor details
                   </div>
                 )}
               </div>
 
               {row._comments && (
-                <div className="mt-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded text-sm text-indigo-800 dark:text-indigo-400">
+                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-800 dark:text-blue-400">
                   <strong>Opmerking:</strong> {row._comments}
                 </div>
               )}
@@ -757,7 +757,7 @@ export default function ReviewPage() {
                   <td className="px-2 py-2 sticky right-0 bg-white dark:bg-slate-800 z-20">
                     <button
                       onClick={() => handleRowClick(absoluteIndex)}
-                      className="flex items-center space-x-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs"
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-xs"
                     >
                       <MessageSquare size={12} />
                       <span>{row._comments ? 'Edit' : 'Add'}</span>
@@ -815,7 +815,7 @@ export default function ReviewPage() {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-2 rounded-md transition-colors ${
                         currentPage === pageNum
-                          ? 'bg-indigo-600 text-white'
+                          ? 'bg-blue-600 text-white'
                           : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
@@ -852,7 +852,7 @@ export default function ReviewPage() {
           value={comments}
           onChange={(e) => setComments(e.target.value)}
           placeholder="Algemene opmerkingen over deze upload..."
-          className="w-full h-32 p-3 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700 resize-none"
+          className="w-full h-32 p-3 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-slate-700 resize-none"
         />
 
         <div className="mt-4 flex gap-4">
@@ -943,8 +943,8 @@ export default function ReviewPage() {
                   }}
                   className={`flex-1 px-4 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
                     selectedAction === 'herinnering'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800'
                   }`}
                 >
                   <Mail size={18} />
@@ -977,7 +977,7 @@ export default function ReviewPage() {
                     value={actionName}
                     onChange={(e) => setActionName(e.target.value)}
                     placeholder="Voer naam in..."
-                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-slate-900 dark:text-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                     autoFocus
                   />
                   <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
@@ -989,7 +989,7 @@ export default function ReviewPage() {
               {/* Show confirmation for Herinnering */}
               {selectedAction === 'herinnering' && (
                 <div className="mb-4">
-                  <p className="text-sm text-slate-600 dark:text-slate-400 bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-md">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
                     Dit wordt opgeslagen als: &quot;Herinnering sturen&quot;
                   </p>
                 </div>
@@ -1014,7 +1014,7 @@ export default function ReviewPage() {
                             addQuickComment(action.value);
                           }
                         }}
-                        className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
                       >
                         {action.label}
                       </button>
@@ -1030,7 +1030,7 @@ export default function ReviewPage() {
                     value={tempComment}
                     onChange={(e) => setTempComment(e.target.value)}
                     placeholder="Voeg een opmerking toe bij deze rij..."
-                    className="w-full h-24 p-3 border border-slate-200 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-slate-900 dark:text-white bg-white dark:bg-gray-700"
+                    className="w-full h-24 p-3 border border-slate-200 dark:border-slate-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-slate-900 dark:text-white bg-white dark:bg-slate-700"
                   />
                 </div>
               </>
@@ -1082,7 +1082,7 @@ export default function ReviewPage() {
                     onClick={() => setSelectedColleague(colleague)}
                     className={`w-full px-4 py-3 text-left rounded-lg transition-colors ${
                       selectedColleague === colleague
-                        ? 'bg-indigo-100 dark:bg-indigo-900/30 border-2 border-indigo-500 text-indigo-900 dark:text-indigo-100'
+                        ? 'bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500 text-blue-900 dark:text-blue-100'
                         : 'bg-slate-50 dark:bg-slate-700 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600 text-slate-900 dark:text-white'
                     }`}
                   >
@@ -1101,7 +1101,7 @@ export default function ReviewPage() {
                     }
                   }}
                   disabled={!selectedColleague}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Toevoegen
                 </button>

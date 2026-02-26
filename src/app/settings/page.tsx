@@ -133,37 +133,37 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="card-modern p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Settings className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Settings className="w-6 h-6 text-blue-700 dark:text-blue-400" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Instellingen</h1>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Email notificaties configureren
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Instellingen</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
+              Email notificaties en account configureren
             </p>
           </div>
 
           <div className="space-y-6">
             {/* Login Credentials Section */}
-            <div className="pb-6 border-b-2 border-gray-300 dark:border-gray-600">
+            <div className="pb-6 border-b-2 border-slate-200 dark:border-slate-600">
               <div className="flex items-center mb-4">
-                <Lock className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   Mijn Login Gegevens
                 </h2>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
                 Wijzig je email en wachtwoord voor inloggen
               </p>
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="newEmail" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <label htmlFor="newEmail" className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
                     Email Adres
                   </label>
                   <input
@@ -172,12 +172,12 @@ export default function SettingsPage() {
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="jouw@email.nl"
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
                     Huidig Wachtwoord (optioneel)
                   </label>
                   <input
@@ -186,12 +186,12 @@ export default function SettingsPage() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
                     Nieuw Wachtwoord (laat leeg om niet te wijzigen)
                   </label>
                   <input
@@ -200,12 +200,12 @@ export default function SettingsPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-900 dark:text-white mb-2">
                     Bevestig Nieuw Wachtwoord
                   </label>
                   <input
@@ -214,7 +214,7 @@ export default function SettingsPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
 
@@ -231,7 +231,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleCredentialUpdate}
                   disabled={updatingCredentials}
-                  className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2.5 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {updatingCredentials ? 'Bijwerken...' : 'Login Gegevens Bijwerken'}
                 </button>
@@ -239,26 +239,26 @@ export default function SettingsPage() {
             </div>
 
             {/* Email Notifications Section */}
-            <div className="pb-6 border-b-2 border-gray-300 dark:border-gray-600">
+            <div className="pb-6 border-b-2 border-slate-200 dark:border-slate-600">
               <div className="flex items-center mb-4">
                 <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                   Email Notificaties
                 </h2>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
                 Configureer waar notificaties naartoe gestuurd worden
               </p>
             </div>
 
-            <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="pb-6 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center mb-3">
                 <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                <label htmlFor="uploaderEmail" className="block text-sm font-medium text-gray-900 dark:text-white">
+                <label htmlFor="uploaderEmail" className="block text-sm font-medium text-slate-900 dark:text-white">
                   Uploader Email (Anissa)
                 </label>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
                 Ontvangt notificatie wanneer review voltooid is
               </p>
               <input
@@ -267,18 +267,18 @@ export default function SettingsPage() {
                 value={uploaderEmail}
                 onChange={(e) => setUploaderEmail(e.target.value)}
                 placeholder="anissa@bedrijf.nl"
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
 
-            <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="pb-6 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center mb-3">
                 <Mail className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-                <label htmlFor="reviewerEmail" className="block text-sm font-medium text-gray-900 dark:text-white">
+                <label htmlFor="reviewerEmail" className="block text-sm font-medium text-slate-900 dark:text-white">
                   Reviewer Email
                 </label>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+              <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
                 Ontvangt notificatie bij nieuwe uploads
               </p>
               <input
@@ -287,7 +287,7 @@ export default function SettingsPage() {
                 value={reviewerEmail}
                 onChange={(e) => setReviewerEmail(e.target.value)}
                 placeholder="reviewer@bedrijf.nl"
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
 

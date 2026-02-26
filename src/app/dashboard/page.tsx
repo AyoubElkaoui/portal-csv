@@ -246,7 +246,7 @@ export default function Dashboard() {
             <button
               onClick={() => fetchUploads(true)}
               disabled={refreshing}
-              className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all disabled:opacity-50"
+              className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-600 transition-all disabled:opacity-50"
               title="Vernieuwen"
             >
               <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />

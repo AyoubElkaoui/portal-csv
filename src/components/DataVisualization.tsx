@@ -202,11 +202,11 @@ export function DataVisualization({ uploads, className = '' }: DataVisualization
           <div className="text-sm text-gray-600 dark:text-gray-400">Totaal Bedrag</div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">€{averageAmount.toFixed(0)}</div>
+          <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">€{averageAmount.toFixed(0)}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Gemiddeld Bedrag</div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{approvalRate}%</div>
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{approvalRate}%</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Goedkeuringspercentage</div>
         </div>
       </div>

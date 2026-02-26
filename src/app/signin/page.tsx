@@ -15,23 +15,20 @@ export default function SignInPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated' && session) {
       router.push('/dashboard');
     }
   }, [status, session, router]);
 
-  // Show loading while checking auth
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-700"></div>
       </div>
     );
   }
 
-  // Don't show signin form if already authenticated
   if (status === 'authenticated') {
     return null;
   }
@@ -68,14 +65,8 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-4">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-200 dark:bg-indigo-900/20 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 dark:bg-purple-900/20 rounded-full blur-3xl opacity-50"></div>
-      </div>
-
-      <div className="relative w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
@@ -89,11 +80,11 @@ export default function SignInPage() {
             />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">CSV Portal</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Factuurbeheer Systeem</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Factuurbeheer Systeem</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-8">
+        <div className="card-modern p-8">
           <h2 className="text-xl font-semibold mb-6 text-slate-900 dark:text-white">Inloggen</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -106,7 +97,7 @@ export default function SignInPage() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="naam@elmarservices.com"
-                  className="w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -120,7 +111,7 @@ export default function SignInPage() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Voer je wachtwoord in"
-                  className="w-full pl-11 pr-12 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-12 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   required
                 />
                 <button
@@ -134,7 +125,7 @@ export default function SignInPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -142,7 +133,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 dark:shadow-none"
+              className="w-full btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -158,34 +149,34 @@ export default function SignInPage() {
             </button>
           </form>
 
-          {/* Quick login hints */}
-          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-slate-700">
+          {/* Quick login */}
+          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 font-medium uppercase tracking-wider">Snel inloggen als:</p>
             <div className="space-y-2">
               <button
                 type="button"
                 onClick={() => quickLogin('anissa@elmarservices.com')}
-                className="w-full text-left px-4 py-3 rounded-xl border border-gray-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
+                className="w-full text-left px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-900 dark:text-white">Anissa</span>
                     <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">Uploader</span>
                   </div>
-                  <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full">upload</span>
+                  <span className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded-full">upload</span>
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => quickLogin('brahim@elmarservices.com')}
-                className="w-full text-left px-4 py-3 rounded-xl border border-gray-100 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all"
+                className="w-full text-left px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-sm font-medium text-slate-900 dark:text-white">Brahim</span>
                     <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">Reviewer</span>
                   </div>
-                  <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded-full">review</span>
+                  <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full">review</span>
                 </div>
               </button>
             </div>

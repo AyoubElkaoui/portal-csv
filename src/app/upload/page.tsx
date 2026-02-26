@@ -192,9 +192,9 @@ export default function UploadPage() {
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="card-modern p-8">
           <div className="text-center mb-8">
-            <div className={`w-14 h-14 ${canUpload ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-amber-50 dark:bg-amber-900/20'} rounded-xl flex items-center justify-center mx-auto mb-5`}>
+            <div className={`w-14 h-14 ${canUpload ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-amber-50 dark:bg-amber-900/20'} rounded-xl flex items-center justify-center mx-auto mb-5`}>
               {canUpload ? (
-                <Upload className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                <Upload className="w-7 h-7 text-blue-600 dark:text-blue-400" />
               ) : (
                 <AlertTriangle className="w-7 h-7 text-amber-600 dark:text-amber-400" />
               )}
@@ -223,7 +223,7 @@ export default function UploadPage() {
                   </p>
                   <button
                     onClick={() => router.push('/dashboard')}
-                    className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     Ga naar Dashboard
                   </button>
@@ -243,7 +243,7 @@ export default function UploadPage() {
                 multiple
                 onChange={(e) => setFiles(Array.from(e.target.files || []))}
                 disabled={!canUpload}
-                className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 dark:file:bg-indigo-900/20 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/20 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                 Selecteer een of meerdere bestanden (max 5) — CSV (.csv) of Excel (.xlsx, .xls)
@@ -287,7 +287,7 @@ export default function UploadPage() {
                 {Object.entries(uploadProgress).map(([filename, status]) => (
                   <div key={filename} className="text-sm pl-2 flex items-start gap-2">
                     <span className="text-slate-800 dark:text-slate-200">{filename}:</span>
-                    <span className={status.includes('Succesvol') ? 'text-emerald-600 dark:text-emerald-400' : status.includes('Mislukt') || status.includes('Fout') || status.includes('leeg') || status.includes('fout') || status.includes('data') ? 'text-red-600 dark:text-red-400' : 'text-indigo-600 dark:text-indigo-400'}>
+                    <span className={status.includes('Succesvol') ? 'text-emerald-600 dark:text-emerald-400' : status.includes('Mislukt') || status.includes('Fout') || status.includes('leeg') || status.includes('fout') || status.includes('data') ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>
                       {status}
                     </span>
                   </div>

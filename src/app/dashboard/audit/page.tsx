@@ -84,7 +84,7 @@ export default function AuditPage() {
     if (action.includes('approved')) return 'text-green-600 bg-green-100';
     if (action.includes('rejected')) return 'text-red-600 bg-red-100';
     if (action.includes('sent')) return 'text-blue-600 bg-blue-100';
-    if (action.includes('created')) return 'text-purple-600 bg-purple-100';
+    if (action.includes('created')) return 'text-blue-600 bg-blue-100';
     return 'text-gray-600 bg-gray-100';
   };
 

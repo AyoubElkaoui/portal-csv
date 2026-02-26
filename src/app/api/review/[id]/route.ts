@@ -96,7 +96,7 @@ export async function POST(
                     
                     <!-- Logo & Header -->
                     <tr>
-                      <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                      <td style="background: #1a56db; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
                         <img src="https://elmarservices.com/wp-content/uploads/2024/12/LOGO-ELMAR-766x226-1-400x118.png" alt="Elmar Services" style="max-width: 200px; margin-bottom: 15px;">
                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Review Voltooid</h1>
                       </td>
@@ -104,7 +104,7 @@ export async function POST(
                     
                     <!-- Content -->
                     <tr>
-                      <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                      <td style="background: #1a56db; padding: 40px 30px; text-align: center;">
                         <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Review Voltooid</h1>
                       </td>
                     </tr>
@@ -163,7 +163,7 @@ export async function POST(
                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 30px;">
                           <tr>
                             <td style="text-align: center;">
-                              <a href="${downloadUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
+                              <a href="${downloadUrl}" style="display: inline-block; padding: 16px 40px; background: #1a56db; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(26, 86, 219, 0.3);">
                                 Download Bestand
                               </a>
                             </td>
@@ -192,7 +192,7 @@ export async function POST(
                     <tr>
                       <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #dee2e6;">
                         <p style="margin: 0 0 10px; color: #6c757d; font-size: 12px;">
-                          <a href="${appUrl}" style="color: #667eea; text-decoration: none; font-weight: 500;">Ga naar CSV Portal</a>
+                          <a href="${appUrl}" style="color: #1a56db; text-decoration: none; font-weight: 500;">Ga naar CSV Portal</a>
                         </p>
                         <p style="margin: 0; color: #adb5bd; font-size: 11px;">
                           Deze email is automatisch gegenereerd. Beantwoord deze email niet.

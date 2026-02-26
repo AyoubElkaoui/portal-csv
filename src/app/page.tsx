@@ -11,7 +11,7 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Hero */}
         <div className="text-center mb-20">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 text-sm font-medium mb-6">
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 text-sm font-medium mb-6">
             Factuur Review Platform
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-slate-900 dark:text-white tracking-tight">
@@ -24,15 +24,15 @@ export default function Home() {
 
         {/* Action Cards */}
         <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-20">
-          <Link href="/upload" className="group card-modern p-8 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-center mb-5 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
-              <Upload className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <Link href="/upload" className="group card-modern p-8 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all">
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
+              <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Upload</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               Upload factuurbestanden voor review
             </p>
-            <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:gap-2 transition-all">
+            <span className="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:gap-2 transition-all">
               Bestand uploaden <ArrowRight size={14} />
             </span>
           </Link>
@@ -69,7 +69,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">Hoe werkt het?</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="flex flex-col items-start">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-white mb-2">1. Upload</h3>
@@ -78,7 +78,7 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col items-start">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-white mb-2">2. Review</h3>
@@ -87,7 +87,7 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col items-start">
-              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
                 <Clock className="w-5 h-5 text-white" />
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-white mb-2">3. Download</h3>
