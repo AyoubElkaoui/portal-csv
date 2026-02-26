@@ -105,7 +105,7 @@ export async function POST(
                     <!-- Content -->
                     <tr>
                       <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
-                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">✅ Review Voltooid</h1>
+                        <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">Review Voltooid</h1>
                       </td>
                     </tr>
                     
@@ -124,7 +124,7 @@ export async function POST(
                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8f9fa; border-radius: 6px; margin-bottom: 30px;">
                           <tr>
                             <td style="padding: 20px;">
-                              <h3 style="margin: 0 0 15px; color: #495057; font-size: 16px; font-weight: 600;">📄 Bestand Details</h3>
+                              <h3 style="margin: 0 0 15px; color: #495057; font-size: 16px; font-weight: 600;">Bestand Details</h3>
                               <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
                                   <td style="padding: 5px 0; color: #6c757d; font-size: 14px;"><strong>Bestandsnaam:</strong></td>
@@ -152,7 +152,7 @@ export async function POST(
                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; margin-bottom: 30px;">
                           <tr>
                             <td style="padding: 15px 20px;">
-                              <p style="margin: 0 0 8px; color: #856404; font-size: 14px; font-weight: 600;">💬 Algemene Opmerkingen:</p>
+                              <p style="margin: 0 0 8px; color: #856404; font-size: 14px; font-weight: 600;">Algemene Opmerkingen:</p>
                               <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.5;">${comments}</p>
                             </td>
                           </tr>
@@ -164,7 +164,7 @@ export async function POST(
                           <tr>
                             <td style="text-align: center;">
                               <a href="${downloadUrl}" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);">
-                                📥 Download Reviewed Bestand
+                                Download Bestand
                               </a>
                             </td>
                           </tr>
@@ -175,7 +175,7 @@ export async function POST(
                           <tr>
                             <td style="padding: 15px 20px;">
                               <p style="margin: 0; color: #721c24; font-size: 13px; line-height: 1.5;">
-                                <strong>⚠️ Belangrijk:</strong> Het bestand wordt automatisch verwijderd zodra je het hebt gedownload.
+                                <strong>Belangrijk:</strong> Het bestand wordt automatisch verwijderd zodra je het hebt gedownload.
                               </p>
                             </td>
                           </tr>

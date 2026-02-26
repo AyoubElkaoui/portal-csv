@@ -81,7 +81,7 @@ export default function UploadPage() {
         }) as unknown[][];
 
         if (jsonData.length === 0) {
-          setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Bestand is leeg' }));
+          setUploadProgress(prev => ({ ...prev, [file.name]: 'Bestand is leeg' }));
           failCount++;
           continue;
         }
@@ -111,7 +111,7 @@ export default function UploadPage() {
         });
 
         if (parsed.errors.length > 0) {
-          setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Parsing fout' }));
+          setUploadProgress(prev => ({ ...prev, [file.name]: 'Parsing fout' }));
           failCount++;
           continue;
         }
@@ -120,7 +120,7 @@ export default function UploadPage() {
       }
 
       if (parsedData.length === 0) {
-        setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Geen data' }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 'Geen data' }));
         failCount++;
         continue;
       }
@@ -143,15 +143,15 @@ export default function UploadPage() {
       const data = await res.json();
       
       if (res.ok) {
-        setUploadProgress(prev => ({ ...prev, [file.name]: '✓ Succesvol' }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 'Succesvol' }));
         successCount++;
       } else {
-        setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Mislukt: ' + data.error }));
+        setUploadProgress(prev => ({ ...prev, [file.name]: 'Mislukt:' + data.error }));
         failCount++;
       }
     } catch (error) {
       console.error('Upload error:', error);
-      setUploadProgress(prev => ({ ...prev, [file.name]: '✗ Fout bij verwerken' }));
+      setUploadProgress(prev => ({ ...prev, [file.name]: 'Fout bij verwerken' }));
       failCount++;
     }
   }
@@ -176,7 +176,7 @@ export default function UploadPage() {
     setUploading(false);
   };  if (checkingStatus) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
         <Navbar />
         <div className="flex items-center justify-center py-20">
           <LoadingSpinner size={40} />
@@ -186,24 +186,24 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <Navbar />
 
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="card-modern p-8">
           <div className="text-center mb-8">
-            <div className={`w-16 h-16 ${canUpload ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+            <div className={`w-14 h-14 ${canUpload ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-amber-50 dark:bg-amber-900/20'} rounded-xl flex items-center justify-center mx-auto mb-5`}>
               {canUpload ? (
-                <Upload className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                <Upload className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
               ) : (
-                <AlertTriangle className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                <AlertTriangle className="w-7 h-7 text-amber-600 dark:text-amber-400" />
               )}
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
               {canUpload ? 'Upload Bestand' : 'Upload Geblokkeerd'}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              {canUpload 
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {canUpload
                 ? 'Selecteer je CSV of Excel bestand om te uploaden (max 5 bestanden tegelijk)'
                 : 'Je hebt het maximum aantal bestanden (5) bereikt'
               }
@@ -211,21 +211,21 @@ export default function UploadPage() {
           </div>
 
           {!canUpload && (
-            <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
+            <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                  <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">
                     Upload geblokkeerd
                   </h3>
-                  <p className="text-yellow-800 dark:text-yellow-200 text-sm mb-2">
-                    Je hebt het maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand kunt uploaden.
+                  <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
+                    Maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand kunt uploaden.
                   </p>
                   <button
                     onClick={() => router.push('/dashboard')}
-                    className="text-sm font-medium text-yellow-900 dark:text-yellow-100 underline hover:no-underline"
+                    className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                   >
-                    Ga naar Dashboard →
+                    Ga naar Dashboard
                   </button>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export default function UploadPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-3">
+              <label className="block text-sm font-medium text-slate-900 dark:text-white mb-3">
                 Bestand selecteren
               </label>
               <input
@@ -243,19 +243,19 @@ export default function UploadPage() {
                 multiple
                 onChange={(e) => setFiles(Array.from(e.target.files || []))}
                 disabled={!canUpload}
-                className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-3 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="block w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 dark:file:bg-indigo-900/20 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Selecteer één of meerdere bestanden (max 5) - CSV (.csv) of Excel (.xlsx, .xls)
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                Selecteer een of meerdere bestanden (max 5) — CSV (.csv) of Excel (.xlsx, .xls)
               </p>
               {files.length > 0 && (
                 <div className="mt-3 space-y-1">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {files.length} bestand(en) geselecteerd:
                   </p>
                   {files.map((f, i) => (
-                    <p key={i} className="text-xs text-gray-600 dark:text-gray-400 pl-2">
-                      • {f.name}
+                    <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2">
+                      {f.name}
                     </p>
                   ))}
                 </div>
@@ -283,12 +283,11 @@ export default function UploadPage() {
             {/* Upload Progress */}
             {Object.keys(uploadProgress).length > 0 && (
               <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Upload status:</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Upload status:</p>
                 {Object.entries(uploadProgress).map(([filename, status]) => (
                   <div key={filename} className="text-sm pl-2 flex items-start gap-2">
-                    <span className="text-gray-600 dark:text-gray-400">•</span>
-                    <span className="text-gray-800 dark:text-gray-200">{filename}:</span>
-                    <span className={status.includes('✓') ? 'text-green-600 dark:text-green-400' : status.includes('✗') ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}>
+                    <span className="text-slate-800 dark:text-slate-200">{filename}:</span>
+                    <span className={status.includes('Succesvol') ? 'text-emerald-600 dark:text-emerald-400' : status.includes('Mislukt') || status.includes('Fout') || status.includes('leeg') || status.includes('fout') || status.includes('data') ? 'text-red-600 dark:text-red-400' : 'text-indigo-600 dark:text-indigo-400'}>
                       {status}
                     </span>
                   </div>

@@ -175,16 +175,16 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Toast Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center p-4 rounded-lg shadow-lg transition-all duration-300 card-modern ${
+            className={`flex items-center p-4 rounded-xl shadow-lg transition-all duration-300 ${
               toast.type === 'success'
-                ? 'bg-green-100 border border-green-400 text-green-800'
-                : 'bg-red-100 border border-red-400 text-red-800'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-400'
+                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-400'
             }`}
           >
             {toast.type === 'success' ? (
@@ -195,7 +195,7 @@ export default function Dashboard() {
             <span className="text-sm font-medium">{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}
-              className="ml-4 text-gray-500 hover:text-gray-700"
+              className="ml-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="w-4 h-4" />
             </button>
@@ -206,20 +206,20 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Instructie Banner */}
-        <div className="mb-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">
-            {isReviewer ? '👋 Welkom Reviewer!' : '👋 Welkom Anissa!'}
+        <div className="mb-8 card-modern p-6">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+            {isReviewer ? 'Welkom Reviewer' : 'Welkom Uploader'}
           </h2>
-          <p className="text-blue-800 dark:text-blue-200 mb-4">
-            {isReviewer 
-              ? 'Als reviewer kun je alle bestanden reviewen. Zodra je een bestand hebt gereviewed, verdwijnt het van jouw dashboard en verschijnt het bij de uploader voor download.'
-              : 'Je kunt maximaal 5 bestanden tegelijk uploaden. Na upload wordt elk bestand automatisch naar de reviewer gestuurd. Zodra de review klaar is, ontvang je een email en kun je het bestand hier downloaden. Na het downloaden wordt het automatisch verwijderd.'
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            {isReviewer
+              ? 'Bestanden die wachten op review staan hieronder. Na je review verschijnt het bestand bij de uploader voor download.'
+              : 'Upload tot 5 bestanden tegelijk. Na review ontvang je een email en kun je het bestand downloaden. Na download wordt het automatisch verwijderd.'
             }
           </p>
           {isUploader && !canUpload && (
-            <div className="bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md p-3 mt-3">
-              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
-                ⚠️ Je hebt het maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand kunt uploaden.
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-4">
+              <p className="text-amber-800 dark:text-amber-400 text-sm">
+                Maximum aantal bestanden (5) bereikt. Download eerst een bestand voordat je een nieuw bestand kunt uploaden.
               </p>
             </div>
           )}
@@ -297,9 +297,9 @@ export default function Dashboard() {
                       upload.status === 'uploaded' ? 'status-uploaded' : 'status-processing'
                     }`}>
                       {upload.status === 'reviewed'
-                        ? '✓ Gereviewed - Klaar voor download'
+                        ? 'Gereviewed'
                         : upload.status === 'uploaded'
-                        ? '⏳ Wacht op Review'
+                        ? 'Wacht op review'
                         : upload.status}
                     </div>
                     <div className="text-slate-500 dark:text-slate-400 text-sm">

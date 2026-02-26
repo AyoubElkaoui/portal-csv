@@ -3,10 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { MessageSquare, X, AlertTriangle, CheckCircle, Search, Filter, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Home, ArrowLeft } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { Navbar } from '@/components/Navbar';
 
 interface RowData extends Record<string, unknown> {
   _comments?: string;
@@ -375,37 +372,12 @@ export default function ReviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-full px-2 sm:px-4 lg:px-6">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center">
-                <Image
-                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                  alt="Elmar Services Logo"
-                  width={120}
-                  height={37}
-                  className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
-                />
-              </div>
-              <nav className="flex space-x-6 items-center">
-                <Link href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
-                  <Home className="mr-1" size={18} />
-                  Home
-                </Link>
-                <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
-                  <ArrowLeft className="mr-1" size={18} />
-                  Back to Dashboard
-                </Link>
-                <ThemeToggle />
-              </nav>
-            </div>
-          </div>
-        </header>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <Navbar />
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-64 rounded mb-8"></div>
-          <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-32 rounded mb-6"></div>
-          <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-96 rounded"></div>
+          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-8 w-64 rounded-lg mb-8"></div>
+          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-32 rounded-lg mb-6"></div>
+          <div className="animate-pulse bg-slate-200 dark:bg-slate-700 h-96 rounded-lg"></div>
         </div>
       </div>
     );
@@ -413,76 +385,22 @@ export default function ReviewPage() {
 
   if (!uploadData) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-          <div className="max-w-full px-2 sm:px-4 lg:px-6">
-            <div className="flex justify-between items-center py-4">
-              <div className="flex items-center">
-                <Image
-                  src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                  alt="Elmar Services Logo"
-                  width={120}
-                  height={37}
-                  className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
-                />
-              </div>
-              <nav className="flex space-x-6 items-center">
-                <Link href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
-                  <Home className="mr-1" size={18} />
-                  Home
-                </Link>
-                <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
-                  <ArrowLeft className="mr-1" size={18} />
-                  Back to Dashboard
-                </Link>
-                <ThemeToggle />
-              </nav>
-            </div>
-          </div>
-        </header>
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Upload niet gevonden</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">De opgevraagde upload bestaat niet.</p>
-            <Link href="/dashboard" className="btn-primary inline-flex items-center">
-              <ArrowLeft className="mr-2" size={20} />
-              Terug naar Dashboard
-            </Link>
-          </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Upload niet gevonden</h1>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">De opgevraagde upload bestaat niet.</p>
+          <a href="/dashboard" className="btn-primary inline-flex items-center">
+            Terug naar Dashboard
+          </a>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-full px-2 sm:px-4 lg:px-6">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <Image
-                src="/LOGO-ELMAR-766x226-1-400x118-2204245369.png"
-                alt="Elmar Services Logo"
-                width={120}
-                height={37}
-                className="h-9 w-auto brightness-0 invert dark:brightness-100 dark:invert-0"
-              />
-            </div>
-            <nav className="flex space-x-6 items-center">
-              <Link href="/" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
-                <Home className="mr-1" size={18} />
-                Home
-              </Link>
-              <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium flex items-center">
-                <ArrowLeft className="mr-1" size={18} />
-                Back to Dashboard
-              </Link>
-              <ThemeToggle />
-            </nav>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Toast Notifications */}
@@ -504,7 +422,7 @@ export default function ReviewPage() {
               <span className="text-sm font-medium">{toast.message}</span>
               <button
                 onClick={() => removeToast(toast.id)}
-                className="ml-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="ml-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -512,37 +430,40 @@ export default function ReviewPage() {
           ))}
         </div>
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Review Upload: {uploadData.upload.filename}</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Review</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{uploadData.upload.filename}</p>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="btn-primary"
+              className="btn-secondary text-sm"
             >
               {isFullscreen ? 'Verkleinen' : 'Vergroten'}
             </button>
             <button
               onClick={() => window.location.href = '/dashboard'}
-              className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors font-medium"
+              className="btn-ghost text-sm"
             >
-              Terug naar Dashboard
+              Terug
             </button>
           </div>
         </div>
 
         <div className="card-modern p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Upload Details</h2>
+          <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Upload Details</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <strong className="text-gray-900 dark:text-white">Bestandsnaam:</strong> <span className="text-gray-700 dark:text-gray-300">{uploadData.upload.filename}</span>
+              <strong className="text-slate-900 dark:text-white">Bestandsnaam:</strong> <span className="text-slate-700 dark:text-slate-300">{uploadData.upload.filename}</span>
             </div>
             <div>
-              <strong className="text-gray-900 dark:text-white">Status:</strong> <span className="text-gray-700 dark:text-gray-300">{uploadData.upload.status}</span>
+              <strong className="text-slate-900 dark:text-white">Status:</strong> <span className="text-slate-700 dark:text-slate-300">{uploadData.upload.status}</span>
             </div>
             <div>
-              <strong className="text-gray-900 dark:text-white">Totaal rijen:</strong> <span className="text-gray-700 dark:text-gray-300">{reviewedData.length}</span>
+              <strong className="text-slate-900 dark:text-white">Totaal rijen:</strong> <span className="text-slate-700 dark:text-slate-300">{reviewedData.length}</span>
             </div>
             <div>
-              <strong className="text-gray-900 dark:text-white">Getoonde rijen:</strong> <span className="text-gray-700 dark:text-gray-300">{filteredAndPaginatedData.totalRows}</span>
+              <strong className="text-slate-900 dark:text-white">Getoonde rijen:</strong> <span className="text-slate-700 dark:text-slate-300">{filteredAndPaginatedData.totalRows}</span>
             </div>
           </div>
           {issuesCount > 0 && (
@@ -558,13 +479,13 @@ export default function ReviewPage() {
             {/* Search Bar */}
             <div className="flex-1 w-full md:max-w-md">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
                 <input
                   type="text"
                   placeholder="Zoek in alle kolommen..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700"
                 />
               </div>
             </div>
@@ -572,7 +493,7 @@ export default function ReviewPage() {
             {/* Filter Toggle Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
             >
               <Filter size={18} />
               {showFilters ? 'Verberg Filters' : 'Toon Filters'}
@@ -580,11 +501,11 @@ export default function ReviewPage() {
 
             {/* Rows per page selector */}
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Rijen per pagina:</label>
+              <label className="text-sm text-slate-700 dark:text-slate-300 whitespace-nowrap">Rijen per pagina:</label>
               <select
                 value={rowsPerPage}
                 onChange={(e) => setRowsPerPage(Number(e.target.value))}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md text-slate-900 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-indigo-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -597,42 +518,42 @@ export default function ReviewPage() {
 
           {/* Collapsible Filters */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Debtor Number Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Debiteurnummer</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Debiteurnummer</label>
                   <input
                     type="text"
                     placeholder="Filter op debiteurnummer..."
                     value={filterDebtor}
                     onChange={(e) => setFilterDebtor(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700"
                   />
                 </div>
 
                 {/* Company Name Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bedrijfsnaam</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bedrijfsnaam</label>
                   <input
                     type="text"
                     placeholder="Filter op bedrijfsnaam..."
                     value={filterCompany}
                     onChange={(e) => setFilterCompany(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700"
                   />
                 </div>
 
                 {/* Rejection Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status Filter</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Status Filter</label>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setFilterRejected('all')}
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterRejected === 'all'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       Alle
@@ -642,7 +563,7 @@ export default function ReviewPage() {
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterRejected === 'rejected'
                           ? 'bg-red-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       Afgewezen
@@ -652,7 +573,7 @@ export default function ReviewPage() {
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterRejected === 'accepted'
                           ? 'bg-green-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       Geaccepteerd
@@ -662,14 +583,14 @@ export default function ReviewPage() {
 
                 {/* Days Open Filter */}
                 <div className="lg:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dagen Open Filter</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Dagen Open Filter</label>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setFilterDaysOpen('all')}
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterDaysOpen === 'all'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       Alle
@@ -679,7 +600,7 @@ export default function ReviewPage() {
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterDaysOpen === 'overdue'
                           ? 'bg-orange-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       Achterstallig
@@ -689,7 +610,7 @@ export default function ReviewPage() {
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                         filterDaysOpen === 'upcoming'
                           ? 'bg-green-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       Niet Verlopen
@@ -701,11 +622,11 @@ export default function ReviewPage() {
           )}
         </div>
 
-        <div className={`card-modern p-6 mb-6 ${isFullscreen ? 'fixed inset-4 z-40 bg-white dark:bg-gray-800 overflow-auto' : ''}`}>
+        <div className={`card-modern p-6 mb-6 ${isFullscreen ? 'fixed inset-4 z-40 bg-white dark:bg-slate-800 overflow-auto' : ''}`}>
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Data Review</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Data Review</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Rijen {filteredAndPaginatedData.startIndex + 1} - {filteredAndPaginatedData.endIndex} van {filteredAndPaginatedData.totalRows}
                 {filteredAndPaginatedData.totalRows !== reviewedData.length && ` (gefilterd van ${reviewedData.length} totaal)`}
               </p>
@@ -717,7 +638,7 @@ export default function ReviewPage() {
               {isFullscreen ? 'Verkleinen' : 'Vergroten'}
             </button>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
             Klik op een rij om opmerkingen toe te voegen. Gebruik de checkbox om rijen af te wijzen.
           </p>
 
@@ -728,13 +649,13 @@ export default function ReviewPage() {
             const daysOpen = calculateDaysOpen(row);
             const isOverdue = daysOpen !== null && daysOpen < 0;
             return (
-            <div key={absoluteIndex} className={`bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border ${isOverdue ? 'border-red-400 dark:border-red-500 bg-red-100 dark:bg-red-900/30' : row._rejected ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-600'}`}>
+            <div key={absoluteIndex} className={`bg-slate-50 dark:bg-slate-700 rounded-lg p-4 border ${isOverdue ? 'border-red-400 dark:border-red-500 bg-red-100 dark:bg-red-900/30' : row._rejected ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900 dark:text-white">
+                  <div className="font-semibold text-slate-900 dark:text-white">
                     {String(row['Factuurnummer'] || row['factuurnummer'] || `Rij ${absoluteIndex + 1}`)}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                     {String(row['Relatienaam'] || row['relatienaam'] || '')}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-500 mt-1">
@@ -747,13 +668,13 @@ export default function ReviewPage() {
                       type="checkbox"
                       checked={row._rejected || false}
                       onChange={() => toggleRowRejection(absoluteIndex)}
-                      className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
+                      className="rounded border-slate-200 dark:border-slate-600 text-red-600 focus:ring-red-500"
                     />
                     <span className="text-xs text-red-600 dark:text-red-400">Afwijzen</span>
                   </label>
                   <button
                     onClick={() => handleRowClick(absoluteIndex)}
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                    className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                   >
                     <MessageSquare size={16} />
                   </button>
@@ -761,21 +682,21 @@ export default function ReviewPage() {
               </div>
 
               {/* Show all columns in mobile view */}
-              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400 mt-3">
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-400 mt-3">
                 {allColumns.slice(0, 6).map((column) => (
                   <div key={column} className="truncate">
                     <span className="font-medium">{column}:</span> {formatCellValue(column, row[column])}
                   </div>
                 ))}
                 {allColumns.length > 6 && (
-                  <div className="col-span-2 text-center text-blue-600 dark:text-blue-400 text-sm mt-2">
+                  <div className="col-span-2 text-center text-indigo-600 dark:text-indigo-400 text-sm mt-2">
                     + {allColumns.length - 6} meer kolommen - klik voor details
                   </div>
                 )}
               </div>
 
               {row._comments && (
-                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-800 dark:text-blue-400">
+                <div className="mt-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded text-sm text-indigo-800 dark:text-indigo-400">
                   <strong>Opmerking:</strong> {row._comments}
                 </div>
               )}
@@ -785,27 +706,27 @@ export default function ReviewPage() {
         </div>
 
         {/* Desktop View - Dynamic Table with All Columns */}
-        <div className="hidden md:block overflow-x-auto border border-gray-300 dark:border-gray-600 rounded-lg" style={{ maxHeight: isFullscreen ? 'calc(100vh - 300px)' : '600px' }}>
+        <div className="hidden md:block overflow-x-auto border border-slate-200 dark:border-slate-600 rounded-lg" style={{ maxHeight: isFullscreen ? 'calc(100vh - 300px)' : '600px' }}>
           <table className="w-full table-auto border-collapse text-sm">
             <thead className="sticky top-0 z-20">
-              <tr className="bg-gray-100 dark:bg-gray-700">
-                <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-12 sticky left-0 bg-gray-100 dark:bg-gray-700 z-30">
+              <tr className="bg-slate-100 dark:bg-slate-700">
+                <th className="px-2 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-12 sticky left-0 bg-slate-100 dark:bg-slate-700 z-30">
                   #
                 </th>
                 {allColumns.map((column) => (
-                  <th key={column} className="px-2 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600" style={{ minWidth: '120px', maxWidth: '200px' }}>
+                  <th key={column} className="px-2 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600" style={{ minWidth: '120px', maxWidth: '200px' }}>
                     {column}
                   </th>
                 ))}
-                <th className="px-2 py-2 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 border-b border-r border-gray-300 dark:border-gray-600 w-16">
+                <th className="px-2 py-2 text-center text-xs font-semibold text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
                   Afwijzen
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 border-b w-24 sticky right-0 bg-gray-100 dark:bg-gray-700 z-30">
+                <th className="px-2 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 border-b w-24 sticky right-0 bg-slate-100 dark:bg-slate-700 z-30">
                   Opmerking
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800">
+            <tbody className="bg-white dark:bg-slate-800">
               {filteredAndPaginatedData.data.map((row, relativeIndex) => {
                 const absoluteIndex = getAbsoluteIndex(relativeIndex);
                 const daysOpen = calculateDaysOpen(row);
@@ -813,30 +734,30 @@ export default function ReviewPage() {
                 return (
                 <tr
                   key={absoluteIndex}
-                  className={`border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isOverdue ? 'bg-red-100 dark:bg-red-900/30' : row._rejected ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                  className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${isOverdue ? 'bg-red-100 dark:bg-red-900/30' : row._rejected ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
                 >
-                  <td className="px-2 py-2 text-xs text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-600 text-center sticky left-0 bg-white dark:bg-gray-800 z-20">
+                  <td className="px-2 py-2 text-xs text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700 text-center sticky left-0 bg-white dark:bg-slate-800 z-20">
                     {absoluteIndex + 1}
                   </td>
                   {allColumns.map((column) => (
-                    <td key={column} className="px-2 py-2 text-xs text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-600">
+                    <td key={column} className="px-2 py-2 text-xs text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700">
                       <div className="truncate" style={{ maxWidth: '180px' }} title={String(row[column] || '')}>
                         {formatCellValue(column, row[column])}
                       </div>
                     </td>
                   ))}
-                  <td className="px-2 py-2 border-r border-gray-200 dark:border-gray-600 text-center">
+                  <td className="px-2 py-2 border-r border-slate-200 dark:border-slate-700 text-center">
                     <input
                       type="checkbox"
                       checked={row._rejected || false}
                       onChange={() => toggleRowRejection(absoluteIndex)}
-                      className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
+                      className="rounded border-slate-200 dark:border-slate-600 text-red-600 focus:ring-red-500"
                     />
                   </td>
-                  <td className="px-2 py-2 sticky right-0 bg-white dark:bg-gray-800 z-20">
+                  <td className="px-2 py-2 sticky right-0 bg-white dark:bg-slate-800 z-20">
                     <button
                       onClick={() => handleRowClick(absoluteIndex)}
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-xs"
+                      className="flex items-center space-x-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs"
                     >
                       <MessageSquare size={12} />
                       <span>{row._comments ? 'Edit' : 'Add'}</span>
@@ -852,7 +773,7 @@ export default function ReviewPage() {
         {/* Pagination Controls */}
         {filteredAndPaginatedData.totalPages > 1 && (
           <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="text-sm text-slate-700 dark:text-slate-300">
               Pagina {currentPage} van {filteredAndPaginatedData.totalPages}
             </div>
             
@@ -860,7 +781,7 @@ export default function ReviewPage() {
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Eerste
               </button>
@@ -868,7 +789,7 @@ export default function ReviewPage() {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                className="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 <ChevronLeft size={16} />
                 Vorige
@@ -894,8 +815,8 @@ export default function ReviewPage() {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-2 rounded-md transition-colors ${
                         currentPage === pageNum
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                       }`}
                     >
                       {pageNum}
@@ -907,7 +828,7 @@ export default function ReviewPage() {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(filteredAndPaginatedData.totalPages, prev + 1))}
                 disabled={currentPage === filteredAndPaginatedData.totalPages}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                className="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 Volgende
                 <ChevronRight size={16} />
@@ -916,7 +837,7 @@ export default function ReviewPage() {
               <button
                 onClick={() => setCurrentPage(filteredAndPaginatedData.totalPages)}
                 disabled={currentPage === filteredAndPaginatedData.totalPages}
-                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Laatste
               </button>
@@ -926,12 +847,12 @@ export default function ReviewPage() {
       </div>
 
       <div className="card-modern p-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Algemene Review Opmerkingen</h2>
+        <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Algemene Review Opmerkingen</h2>
         <textarea
           value={comments}
           onChange={(e) => setComments(e.target.value)}
           placeholder="Algemene opmerkingen over deze upload..."
-          className="w-full h-32 p-3 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700 resize-none"
+          className="w-full h-32 p-3 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-900 dark:text-white bg-white dark:bg-gray-700 resize-none"
         />
 
         <div className="mt-4 flex gap-4">
@@ -945,7 +866,7 @@ export default function ReviewPage() {
 
           <button
             onClick={() => window.location.href = '/dashboard'}
-            className="bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white px-6 py-2 rounded-md transition-colors font-medium"
+            className="bg-slate-500 hover:bg-slate-600 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-6 py-2 rounded-md transition-colors font-medium"
           >
             Annuleren
           </button>
@@ -955,37 +876,37 @@ export default function ReviewPage() {
       {/* Comment Modal */}
       {commentModalOpen && selectedRowIndex !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="card-modern bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="card-modern bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Opmerking toevoegen</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Opmerking toevoegen</h3>
               <button
                 onClick={handleCommentCancel}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
 
             <div className="mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Rij {selectedRowIndex + 1} - Alle gegevens:</p>
-              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-sm max-h-48 overflow-y-auto">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Rij {selectedRowIndex + 1} - Alle gegevens:</p>
+              <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded text-sm max-h-48 overflow-y-auto">
                 <div className="grid grid-cols-1 gap-1">
                   {allColumns.map((column) => (
                     <div key={column} className="flex justify-between">
-                      <span className="font-medium text-gray-700 dark:text-gray-300">{column}:</span>
-                      <span className="text-gray-900 dark:text-white ml-2 truncate">{formatCellValue(column, reviewedData[selectedRowIndex]?.[column])}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">{column}:</span>
+                      <span className="text-slate-900 dark:text-white ml-2 truncate">{formatCellValue(column, reviewedData[selectedRowIndex]?.[column])}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2 mt-2">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Dagen open:</span>
+                  <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-2 mt-2">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">Dagen open:</span>
                     {(() => {
                       const daysOpen = calculateDaysOpen(reviewedData[selectedRowIndex] || {});
                       return daysOpen !== null ? (
-                        <span className={`font-semibold ml-2 ${daysOpen < 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-white'}`}>
+                        <span className={`font-semibold ml-2 ${daysOpen < 0 ? 'text-orange-600 dark:text-orange-400' : 'text-slate-900 dark:text-white'}`}>
                           {daysOpen > 0 ? `+${daysOpen}` : daysOpen}
                         </span>
                       ) : (
-                        <span className="text-gray-400 dark:text-gray-500 ml-2">-</span>
+                        <span className="text-slate-400 dark:text-gray-500 ml-2">-</span>
                       );
                     })()}
                   </div>
@@ -1003,15 +924,15 @@ export default function ReviewPage() {
                       toggleRowRejection(selectedRowIndex);
                     }
                   }}
-                  className="rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500"
+                  className="rounded border-slate-200 dark:border-slate-600 text-red-600 focus:ring-red-500"
                 />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deze rij afwijzen</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Deze rij afwijzen</span>
               </label>
             </div>
 
             {/* Action Buttons - Herinnering / Bellen */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                 Actie selecteren:
               </label>
               <div className="flex gap-3 mb-4">
@@ -1022,8 +943,8 @@ export default function ReviewPage() {
                   }}
                   className={`flex-1 px-4 py-3 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
                     selectedAction === 'herinnering'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800'
                   }`}
                 >
                   <Mail size={18} />
@@ -1048,7 +969,7 @@ export default function ReviewPage() {
               {/* Show name input when Bellen is selected */}
               {selectedAction === 'bellen' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Naam invoeren:
                   </label>
                   <input
@@ -1056,10 +977,10 @@ export default function ReviewPage() {
                     value={actionName}
                     onChange={(e) => setActionName(e.target.value)}
                     placeholder="Voer naam in..."
-                    className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-slate-900 dark:text-white"
                     autoFocus
                   />
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                     Dit wordt opgeslagen als: &quot;Bellen: {actionName || '[naam]'}&quot;
                   </p>
                 </div>
@@ -1068,7 +989,7 @@ export default function ReviewPage() {
               {/* Show confirmation for Herinnering */}
               {selectedAction === 'herinnering' && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-md">
                     Dit wordt opgeslagen als: &quot;Herinnering sturen&quot;
                   </p>
                 </div>
@@ -1079,7 +1000,7 @@ export default function ReviewPage() {
             {!selectedAction && (
               <>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Snelle acties:
                   </label>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -1093,7 +1014,7 @@ export default function ReviewPage() {
                             addQuickComment(action.value);
                           }
                         }}
-                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-xs hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                        className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-full text-xs hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
                       >
                         {action.label}
                       </button>
@@ -1102,14 +1023,14 @@ export default function ReviewPage() {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Opmerking (handmatig toevoegen/bewerken)
                   </label>
                   <textarea
                     value={tempComment}
                     onChange={(e) => setTempComment(e.target.value)}
                     placeholder="Voeg een opmerking toe bij deze rij..."
-                    className="w-full h-24 p-3 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                    className="w-full h-24 p-3 border border-slate-200 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-slate-900 dark:text-white bg-white dark:bg-gray-700"
                   />
                 </div>
               </>
@@ -1125,7 +1046,7 @@ export default function ReviewPage() {
               </button>
               <button
                 onClick={handleCommentCancel}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-500 text-white px-4 py-2 rounded transition-colors font-medium"
+                className="flex-1 bg-slate-500 hover:bg-slate-600 dark:bg-slate-600 dark:hover:bg-slate-500 text-white px-4 py-2 rounded transition-colors font-medium"
               >
                 Annuleren
               </button>
@@ -1137,10 +1058,10 @@ export default function ReviewPage() {
       {/* Colleague Selection Modal */}
       {showColleagueModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
                   Selecteer Collega
                 </h3>
                 <button
@@ -1148,7 +1069,7 @@ export default function ReviewPage() {
                     setShowColleagueModal(false);
                     setSelectedColleague('');
                   }}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   <X size={24} />
                 </button>
@@ -1161,8 +1082,8 @@ export default function ReviewPage() {
                     onClick={() => setSelectedColleague(colleague)}
                     className={`w-full px-4 py-3 text-left rounded-lg transition-colors ${
                       selectedColleague === colleague
-                        ? 'bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500 text-blue-900 dark:text-blue-100'
-                        : 'bg-gray-50 dark:bg-gray-700 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
+                        ? 'bg-indigo-100 dark:bg-indigo-900/30 border-2 border-indigo-500 text-indigo-900 dark:text-indigo-100'
+                        : 'bg-slate-50 dark:bg-slate-700 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-600 text-slate-900 dark:text-white'
                     }`}
                   >
                     {colleague}
@@ -1180,7 +1101,7 @@ export default function ReviewPage() {
                     }
                   }}
                   disabled={!selectedColleague}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Toevoegen
                 </button>
@@ -1189,7 +1110,7 @@ export default function ReviewPage() {
                     setShowColleagueModal(false);
                     setSelectedColleague('');
                   }}
-                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors font-medium"
+                  className="flex-1 bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded transition-colors font-medium"
                 >
                   Annuleren
                 </button>
